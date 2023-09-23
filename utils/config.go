@@ -3,8 +3,7 @@ package utils
 import "github.com/spf13/viper"
 
 type Config struct {
-	PEXELAPIKEY string `mapstructure:"PEXELS_API_KEY"`
-	PEXELSAPI string `mapstructure:"PEXELS_API"`
+	PEXELSAPIKEY string `mapstructure:"PEXELS_API_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

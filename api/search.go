@@ -28,7 +28,7 @@ func searchPexel(c *gin.Context) {
 		return 
 	}
 
-	px := pexels.NewClient(config.PEXELAPIKEY)
+	px := pexels.NewClient(config.PEXELSAPIKEY)
 	ctx := context.Background()
 	res, err := px.PhotoService.Search(ctx, &pexels.PhotoParams{Query: req.Name, Color: req.Color})
 	if err != nil {

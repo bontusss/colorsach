@@ -36,7 +36,7 @@ func GetPexels(image, color string) (photo Photo, err error) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	req.Header.Add("Authorization", config.PEXELAPIKEY)
+	req.Header.Add("Authorization", config.PEXELSAPIKEY)
 
 	resp, err := client.Do(req)
 	if err != nil {
