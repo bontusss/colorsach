@@ -16,7 +16,7 @@ type searchRequest struct {
 }
 
 // Gin handler for getting image from pexels api
-func searchPexel(c *gin.Context) {
+func SearchPexel(c *gin.Context) {
 	config, err := utils.LoadConfig(".")
 	if err != nil {
 		log.Fatal("Cannot load config", err)

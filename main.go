@@ -9,7 +9,9 @@ package main
 
 
 
-import "github.com/bontusss/colosach/api"
+import (
+	"github.com/bontusss/colosach/api"
+)
 
 
 func main() {
