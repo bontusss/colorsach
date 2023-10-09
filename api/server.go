@@ -1,11 +1,13 @@
 package api
 
 import (
+	"fmt"
+
 	_ "github.com/bontusss/colosach/docs"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/gin-contrib/cors"
 )
 
 // @title Colosach API
@@ -23,9 +25,10 @@ import (
 // @Success 200
 // @Router /pexel [post]
 func Start(address string) error {
+	fmt.Println("Starting server at", address)
 	router := gin.Default()
 
-	router.POST("/pexel", SearchPexel)
+	router.POST("/pexels", SearchPexel)
 
 	router.GET("/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
