@@ -27,12 +27,17 @@ import (
 func Start(address string) error {
 	fmt.Println("Starting server at", address)
 	router := gin.Default()
+	corsConfig := cors.DefaultConfig()
 
+	corsConfig.AllowOrigins = []string{"*"}
+	corsConfig.AddAllowMethods("OPTIONS")
+	router.Use(cors.New(corsConfig))
+	
 	router.POST("/pexels", SearchPexel)
 
 	router.GET("/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	router.Use(cors.Default())
+	
 	return router.Run(address)
 }
 
