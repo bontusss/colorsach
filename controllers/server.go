@@ -1,4 +1,4 @@
-package api
+package controllers
 
 import (
 	"fmt"
@@ -6,15 +6,13 @@ import (
 	_ "github.com/bontusss/colosach/docs"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	swaggerfiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title Colosach API
 
 // @BasePath /:3000
 
-// colosach pexels godoc
+// Start colosach pexels godoc
 // @Summary colosach pexels
 // @param name string
 //
@@ -32,12 +30,13 @@ func Start(address string) error {
 	corsConfig.AllowOrigins = []string{"*"}
 	corsConfig.AddAllowMethods("OPTIONS")
 	router.Use(cors.New(corsConfig))
-	
-	router.POST("/pexels", SearchPexel)
 
-	router.GET("/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	//router.POST("/pexels", SearchPexel)
+	router.POST("/search", Search)
+	router.POST("/unsplash", UnsplashSSearch)
 
-	
+	//router.GET("/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
 	return router.Run(address)
 }
 

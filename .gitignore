@@ -51,5 +51,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
+unsplash.json
+.air.toml
 # End of https://www.toptal.com/developers/gitignore/api/go,windows

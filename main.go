@@ -7,14 +7,15 @@ Date: 9th september 2023
 
 package main
 
-
-
 import (
-	"github.com/bontusss/colosach/api"
+	"github.com/bontusss/colosach/controllers"
+	"log"
 )
 
-
 func main() {
-	
-	api.Start(":3000")
+
+	err := controllers.Start(":3000")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
