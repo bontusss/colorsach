@@ -31,9 +31,8 @@ func Start(address string) error {
 	corsConfig.AddAllowMethods("OPTIONS")
 	router.Use(cors.New(corsConfig))
 
-	//router.POST("/pexels", SearchPexel)
-	router.POST("/search", Search)
-	router.POST("/unsplash", UnsplashSSearch)
+	router.POST("/pexels", SearchPexel)
+	router.POST("/unsplash", GetUnsplash)
 
 	//router.GET("/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
