@@ -1,4 +1,4 @@
-package controllers
+package services
 
 import (
 	"context"
@@ -15,26 +15,17 @@ type searchRequest struct {
 	Name  string `json:"name" binding:"required"`
 }
 
-//func Search(c *gin.Context) {
-//	var colorsach []interface{}
-//	pexel := SearchPexel(c)
-//	splash := GetUnsplash(c)
-//
-//	colorsach = append(colorsach, pexel)
-//	colorsach = append(colorsach, splash)
-//	c.JSON(http.StatusOK, colorsach)
-//}
-
 func SearchPexel(c *gin.Context) {
-	err := godotenv.Load()
+	//todo load env via config package
+	err := godotenv.Load("app.env")
 	if err != nil {
-		log.Fatal("err loading .env file")
+		log.Fatal("err loading app.env file")
 	}
 	key := os.Getenv("PEXELS_API_KEY")
 	var req searchRequest
 	err = c.ShouldBindJSON(&req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errResponse(err))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 
 	}
 
@@ -42,7 +33,7 @@ func SearchPexel(c *gin.Context) {
 	ctx := context.Background()
 	res, err := px.PhotoService.Search(ctx, &pexels.PhotoParams{Query: req.Name, Color: req.Color})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, errResponse(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 	}
 	c.JSON(http.StatusOK, res)
 	//return res
