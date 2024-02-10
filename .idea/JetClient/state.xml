@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JetClientState">
+    <option name="folders">
+      <list>
+        <folderState>
+          <option name="description" value="Api endpoints for the colosach project" />
+          <option name="folders">
+            <list>
+              <folderState>
+                <option name="id" value="11af90ce-f4fa-4dd0-b4ea-b3a7ec9f47ad" />
+                <option name="name" value="Auth" />
+                <option name="requests">
+                  <list>
+                    <requestState>
+                      <option name="body">
+                        <bodyState>
+                          <option name="raw" value="{&#10;  &quot;email&quot;: &quot;user@gmail.com&quot;,&#10;  &quot;name&quot;: &quot;Chimdindu James&quot;,&#10;  &quot;password&quot;: &quot;password123&quot;,&#10;  &quot;passwordConfirm&quot;: &quot;password123&quot;&#10;}" />
+                          <option name="type" value="JSON" />
+                        </bodyState>
+                      </option>
+                      <option name="headers">
+                        <list>
+                          <headerState>
+                            <option name="key" value="Content-Type" />
+                            <option name="value" value="application/json" />
+                          </headerState>
+                        </list>
+                      </option>
+                      <option name="id" value="ee0aca70-c88e-4d57-b813-079bb7409d2a" />
+                      <option name="method" value="POST" />
+                      <option name="name" value="Register" />
+                      <option name="url" value="http://localhost:8000/api/auth/register" />
+                    </requestState>
+                    <requestState>
+                      <option name="id" value="833060fb-22ba-4687-83b2-c036e01aafcd" />
+                      <option name="method" value="GET" />
+                      <option name="name" value="Verify Email" />
+                      <option name="url" value="http://localhost:8000/api/auth/verifyemail/lsg2Q3QwhdMK2J21mkoR" />
+                    </requestState>
+                    <requestState>
+                      <option name="body">
+                        <bodyState>
+                          <option name="raw" value="{&#10;  &quot;email&quot;: &quot;user@gmail.com&quot;,&#10;  &quot;password&quot;: &quot;password123&quot;&#10;}" />
+                          <option name="type" value="JSON" />
+                        </bodyState>
+                      </option>
+                      <option name="headers">
+                        <list>
+                          <headerState>
+                            <option name="key" value="Content-Type" />
+                            <option name="value" value="application/json" />
+                          </headerState>
+                        </list>
+                      </option>
+                      <option name="id" value="e45d5f37-bf77-460b-8390-de1fd8ca5573" />
+                      <option name="method" value="POST" />
+                      <option name="name" value="Login" />
+                      <option name="url" value="http://localhost:8000/api/auth/login" />
+                    </requestState>
+                    <requestState>
+                      <option name="id" value="64c91597-3a0d-4e65-b65c-38ab8e5a2f57" />
+                      <option name="method" value="GET" />
+                      <option name="name" value="Logout" />
+                      <option name="url" value="http://localhost:8000/api/auth/logout" />
+                    </requestState>
+                  </list>
+                </option>
+                <option name="sortWeight" value="1000000" />
+              </folderState>
+            </list>
+          </option>
+          <option name="id" value="c8004cec-f3d8-44ae-99f4-7b198db4bbf5" />
+          <option name="name" value="colosach" />
+          <option name="requests">
+            <list>
+              <requestState>
+                <option name="body">
+                  <bodyState>
+                    <option name="raw" value="{&#10;  &quot;name&quot;: &quot;car&quot;,&#10;  &quot;color&quot;: &quot;red&quot;&#10;}" />
+                    <option name="type" value="JSON" />
+                  </bodyState>
+                </option>
+                <option name="description" value="endpoint for pexels search" />
+                <option name="headers">
+                  <list>
+                    <headerState>
+                      <option name="key" value="Content-Type" />
+                      <option name="value" value="application/json" />
+                    </headerState>
+                  </list>
+                </option>
+                <option name="id" value="41be038a-259f-476f-b88b-39ec4f4c446c" />
+                <option name="method" value="GET" />
+                <option name="name" value="Search" />
+                <option name="url" value="http://localhost:8000/api/search" />
+              </requestState>
+              <requestState>
+                <option name="id" value="6c1c69bc-692d-4ebc-808c-19707d3af8fe" />
+                <option name="method" value="GET" />
+                <option name="name" value="health-checker" />
+                <option name="url" value="http://localhost:8000/api/health-checker" />
+              </requestState>
+            </list>
+          </option>
+          <option name="sortWeight" value="1000000" />
+          <option name="syncProperties">
+            <synchronizationPropertiesState>
+              <option name="folderPath" value="$PROJECT_DIR$/.jetclient" />
+            </synchronizationPropertiesState>
+          </option>
+        </folderState>
+      </list>
+    </option>
+    <option name="id" value="ae03ae00-2a97-474b-9b98-8b266cfc43e1" />
+  </component>
+</project>
