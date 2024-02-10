@@ -17,9 +17,9 @@ type searchRequest struct {
 
 func SearchPexel(c *gin.Context) {
 	//todo load env via config package
-	err := godotenv.Load("app.env")
+	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal("err loading app.env file")
+		log.Fatal("err loading .env file")
 	}
 	key := os.Getenv("PEXELS_API_KEY")
 	var req searchRequest

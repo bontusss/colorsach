@@ -14,7 +14,7 @@ import (
 func DB() *mongo.Client {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading app.env file...")
+		log.Fatal("Error loading .env file...")
 	}
 
 	uri := os.Getenv("MONGO_URI")
