@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"github.com/bontusss/colosach/config"
 	"github.com/bontusss/colosach/models"
-	"github.com/k3a/html2text"
 	"gopkg.in/gomail.v2"
 	"log"
 	"os"
 	"path/filepath"
 	"text/template"
+
+	"github.com/k3a/html2text"
 )
 
 type EmailData struct {
@@ -20,7 +21,8 @@ type EmailData struct {
 	Subject   string
 }
 
-// ParseTemplateDir 👇 Email template parser
+// 👇 Email template parser
+
 func ParseTemplateDir(dir string) (*template.Template, error) {
 	var paths []string
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -42,7 +44,6 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 	return template.ParseFiles(paths...)
 }
 
-// SendEmail ? Email template parser
 func SendEmail(user *models.DBResponse, data *EmailData, templateName string) error {
 	loadConfig, err := config.LoadConfig(".")
 
@@ -60,17 +61,14 @@ func SendEmail(user *models.DBResponse, data *EmailData, templateName string) er
 
 	var body bytes.Buffer
 
-	templateDir, err := ParseTemplateDir("templates")
+	template, err := ParseTemplateDir("templates")
 	if err != nil {
-		log.Fatal("Could not parse templateDir", err)
+		log.Fatal("Could not parse template", err)
 	}
 
-	templateDir = templateDir.Lookup(templateName)
-	err = templateDir.Execute(&body, &data)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(templateDir.Name())
+	template = template.Lookup(templateName)
+	template.Execute(&body, &data)
+	fmt.Println(template.Name())
 
 	m := gomail.NewMessage()
 
@@ -88,5 +86,4 @@ func SendEmail(user *models.DBResponse, data *EmailData, templateName string) er
 		return err
 	}
 	return nil
-
 }

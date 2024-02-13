@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/bontusss/colosach/config"
 	"github.com/bontusss/colosach/models"
 	"github.com/bontusss/colosach/services"
 	"github.com/bontusss/colosach/utils"
@@ -14,6 +13,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -44,6 +45,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	}
 
 	newUser, err := ac.authService.SignUpUser(user)
+	fmt.Println("User registered")
 
 	if err != nil {
 		if strings.Contains(err.Error(), "email already exist") {
@@ -54,18 +56,15 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		return
 	}
 
-	loadConfig, err := config.LoadConfig(".")
-	if err != nil {
-		log.Fatal("Could not load config", err)
-	}
-
 	//generate verification code
+	fmt.Println("Generating code")
 	verificationCode := randstr.String(20)
 	_, err = ac.collection.UpdateOne(ac.ctx, bson.M{"email": newUser.Email}, bson.M{"$set": bson.M{"verificationCode": verificationCode}})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Println("User Updated")
 	var firstName = newUser.Name
 	if strings.Contains(firstName, " ") {
 		firstName = strings.Split(firstName, " ")[1]
@@ -73,12 +72,15 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	//send  email verification mail
 	emailData := utils.EmailData{
-		URL:       loadConfig.Port + "/verify-email/" + verificationCode,
+		URL:       os.Getenv("PORT") + "/verify-email/" + verificationCode,
 		FirstName: firstName,
 		Subject:   "Your Colosach verification code",
 	}
+	fmt.Println("code generated")
 	err = utils.SendEmail(newUser, &emailData, "verificationCode.html")
+	fmt.Println("Starting to send mail")
 	if err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "success", "message": "There was an error sending email"})
 		return
 	}
@@ -112,24 +114,41 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		return
 	}
 
-	loadConfig, _ := config.LoadConfig(".")
-
 	// Generate Tokens
-	accessToken, err := utils.CreateToken(loadConfig.AccessTokenExpiresIn, user.ID, loadConfig.AccessTokenPrivateKey)
+	tokenDuration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXPIRED_IN"))
+	if err != nil {
+		log.Fatal("Error parsing duration", err)
+	}
+	accessToken, err := utils.CreateToken(tokenDuration, user.ID, os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	refreshToken, err := utils.CreateToken(loadConfig.RefreshTokenExpiresIn, user.ID, loadConfig.RefreshTokenPrivateKey)
+	refreshDuration, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_EXPIRED_IN"))
+	if err != nil {
+		log.Fatal("Error parsing duration", err)
+	}
+	refreshToken, err := utils.CreateToken(refreshDuration, user.ID, os.Getenv("REFRESH_TOKEN_PRIVATE_KEY"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	ctx.SetCookie("access_token", accessToken, loadConfig.AccessTokenMaxAge*60, "/", "localhost", false, true)
-	ctx.SetCookie("refresh_token", refreshToken, loadConfig.RefreshTokenMaxAge*60, "/", "localhost", false, true)
-	ctx.SetCookie("logged_in", "true", loadConfig.AccessTokenMaxAge*60, "/", "localhost", false, false)
+	atma, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_MAXAGE"))
+	if err != nil {
+		log.Fatal("Error: ", err)
+		return
+	}
+
+	rtma, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
+	if err != nil {
+		log.Fatal("Error: ", err)
+		return
+	}
+	ctx.SetCookie("access_token", accessToken, atma*60, "/", "localhost", false, true)
+	ctx.SetCookie("refresh_token", refreshToken, rtma*60, "/", "localhost", false, true)
+	ctx.SetCookie("logged_in", "true", atma*60, "/", "localhost", false, false)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": accessToken})
 }
@@ -144,9 +163,7 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	loadConfig, _ := config.LoadConfig(".")
-
-	sub, err := utils.ValidateToken(cookie, loadConfig.RefreshTokenPublicKey)
+	sub, err := utils.ValidateToken(cookie, os.Getenv("REFRESH_TOKEN_PUBLIC_KEY"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": err.Error()})
 		return
@@ -158,14 +175,25 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := utils.CreateToken(loadConfig.AccessTokenExpiresIn, user.ID, loadConfig.AccessTokenPrivateKey)
+	tokenDuration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXPIRED_IN"))
+	if err != nil {
+		log.Fatal("Error parsing duration", err)
+	}
+
+	accessToken, err := utils.CreateToken(tokenDuration, user.ID, os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	ctx.SetCookie("access_token", accessToken, loadConfig.AccessTokenMaxAge*60, "/", "localhost", false, true)
-	ctx.SetCookie("logged_in", "true", loadConfig.AccessTokenMaxAge*60, "/", "localhost", false, false)
+	atma, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_MAXAGE"))
+	if err != nil {
+		log.Fatal("Error: ", err)
+		return
+	}
+
+	ctx.SetCookie("access_token", accessToken, atma*60, "/", "localhost", false, true)
+	ctx.SetCookie("logged_in", "true", atma*60, "/", "localhost", false, false)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": accessToken})
 }
@@ -229,11 +257,6 @@ func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 		return
 	}
 
-	LoadConfig, err := config.LoadConfig(".")
-	if err != nil {
-		log.Fatal("Could not load config", err)
-	}
-
 	// Generate Verification Code
 	passwordResetToken := randstr.String(20)
 
@@ -259,7 +282,7 @@ func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 
 	// ? Send Email
 	emailData := utils.EmailData{
-		URL:       LoadConfig.Port + "/reset-password/" + passwordResetToken,
+		URL:       os.Getenv("CLIENT_ORIGIN") + "/reset-password/" + passwordResetToken,
 		FirstName: firstName,
 		Subject:   "Your password reset token (valid for 10min)",
 	}

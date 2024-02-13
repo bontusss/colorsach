@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/bontusss/colosach/config"
 	"github.com/bontusss/colosach/services"
 	"github.com/bontusss/colosach/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -29,8 +29,7 @@ func DeserializeUser(userService services.UserService) gin.HandlerFunc {
 			return
 		}
 
-		loadConfig, _ := config.LoadConfig(".")
-		sub, err := utils.ValidateToken(accessToken, loadConfig.AccessTokenPublicKey)
+		sub, err := utils.ValidateToken(accessToken, os.Getenv("ACCESS_TOKEN_PUBLIC_KEY"))
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": err.Error()})
 			return
