@@ -15,7 +15,7 @@
                     <requestState>
                       <option name="body">
                         <bodyState>
-                          <option name="raw" value="{&#10;  &quot;email&quot;: &quot;user@gmail.com&quot;,&#10;  &quot;name&quot;: &quot;Chimdindu James&quot;,&#10;  &quot;password&quot;: &quot;password123&quot;,&#10;  &quot;passwordConfirm&quot;: &quot;password123&quot;&#10;}" />
+                          <option name="raw" value="{&#10;  &quot;email&quot;: &quot;user58764@gmail.com&quot;,&#10;  &quot;name&quot;: &quot;kan James&quot;,&#10;  &quot;password&quot;: &quot;password123&quot;,&#10;  &quot;passwordConfirm&quot;: &quot;password123&quot;&#10;}" />
                           <option name="type" value="JSON" />
                         </bodyState>
                       </option>
@@ -36,7 +36,7 @@
                       <option name="id" value="833060fb-22ba-4687-83b2-c036e01aafcd" />
                       <option name="method" value="GET" />
                       <option name="name" value="Verify Email" />
-                      <option name="url" value="http://localhost:8000/api/auth/verifyemail/lsg2Q3QwhdMK2J21mkoR" />
+                      <option name="url" value="http://localhost:8000/api/auth/verify-email/t26yMN1tapokp3QeFW9c" />
                     </requestState>
                     <requestState>
                       <option name="body">
@@ -67,6 +67,21 @@
                   </list>
                 </option>
                 <option name="sortWeight" value="1000000" />
+              </folderState>
+              <folderState>
+                <option name="id" value="839cce3e-ec81-4de2-a534-dd0035fea629" />
+                <option name="name" value="Live" />
+                <option name="requests">
+                  <list>
+                    <requestState>
+                      <option name="id" value="338e74d4-03d6-443b-a962-cc31412b1a81" />
+                      <option name="method" value="GET" />
+                      <option name="name" value="Health Checker" />
+                      <option name="url" value="https://colosach.onrender.com:8000/health-checker" />
+                    </requestState>
+                  </list>
+                </option>
+                <option name="sortWeight" value="2000000" />
               </folderState>
             </list>
           </option>

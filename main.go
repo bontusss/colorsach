@@ -10,18 +10,19 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/bontusss/colosach/config"
 	"github.com/bontusss/colosach/controllers"
 	"github.com/bontusss/colosach/routes"
 	"github.com/bontusss/colosach/services"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 )
 
 var (
@@ -43,16 +44,15 @@ var (
 )
 
 func init() {
-	temp = template.Must(template.ParseGlob("templates/*.html"))
-	loadConfig, err := config.LoadConfig(".")
+	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal("Could not load environment variables", err)
+		log.Fatal("Error loading app.env file", err)
 	}
-
+	temp = template.Must(template.ParseGlob("templates/*.html"))
 	ctx = context.TODO()
-
 	// Connect to MongoDB
-	mongoconn := options.Client().ApplyURI(loadConfig.DBUri)
+	fmt.Println("mongo DBurl is", os.Getenv("MONGODB_URI"))
+	mongoconn := options.Client().ApplyURI(os.Getenv("MONGODB_URI"))
 	mongoclient, err := mongo.Connect(ctx, mongoconn)
 
 	if err != nil {
@@ -95,12 +95,10 @@ func init() {
 }
 
 func main() {
-	loadConfig, err := config.LoadConfig(".")
-
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Could not load config", err)
+		log.Fatal("Error loading app.env file")
 	}
-
 	defer func(mongoclient *mongo.Client, ctx context.Context) {
 		err := mongoclient.Disconnect(ctx)
 		if err != nil {
@@ -117,8 +115,7 @@ func main() {
 	//}
 
 	corsConfig := cors.DefaultConfig()
-	//todo update origins
-	corsConfig.AllowOrigins = []string{loadConfig.Origin}
+	corsConfig.AllowOrigins = []string{os.Getenv("CLIENT_ORIGIN"), os.Getenv("CLIENT_URL")}
 	corsConfig.AllowCredentials = true
 
 	server.Use(cors.New(corsConfig))
@@ -132,5 +129,5 @@ func main() {
 
 	AuthRouteController.AuthRoute(router, userService)
 	UserRouteController.UserRoute(router, userService)
-	log.Fatal(server.Run(":" + loadConfig.Port))
+	log.Fatal(server.Run(":" + os.Getenv("PORT")))
 }

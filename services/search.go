@@ -3,9 +3,7 @@ package services
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/kosa3/pexels-go"
-	"log"
 	"net/http"
 	"os"
 )
@@ -17,19 +15,15 @@ type searchRequest struct {
 
 func SearchPexel(c *gin.Context) {
 	//todo load env via config package
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("err loading .env file")
-	}
-	key := os.Getenv("PEXELS_API_KEY")
+
 	var req searchRequest
-	err = c.ShouldBindJSON(&req)
+	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 
 	}
 
-	px := pexels.NewClient(key)
+	px := pexels.NewClient(os.Getenv("PEXELS_API_KEY"))
 	ctx := context.Background()
 	res, err := px.PhotoService.Search(ctx, &pexels.PhotoParams{Query: req.Name, Color: req.Color})
 	if err != nil {
