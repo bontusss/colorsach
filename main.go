@@ -1,6 +1,6 @@
 /*
 
-Written by Ikwechegh `Ukandu <ikwecheghu@gmail.com>
+Written by Ikwechegh `Ukandu <ikwecheghu@gmail.com: https://github.com/bontusss>
 Date: 9th september 2023
 
 */
@@ -31,16 +31,23 @@ var (
 	mongoclient *mongo.Client
 	//redisclient *redis.Client
 
+	// for users
 	userService         services.UserService
 	UserController      controllers.UserController
 	UserRouteController routes.UserRouteController
 
+	// for auths
 	authCollection      *mongo.Collection
 	authService         services.AuthService
 	AuthController      controllers.AuthController
 	AuthRouteController routes.AuthRouteController
 
-	temp *template.Template
+	// for libraries
+	libService         services.LibraryService
+	libController      controllers.LibraryController
+	libCollection      *mongo.Collection
+	libRouteController routes.LibraryRouteController
+	temp               *template.Template
 )
 
 func init() {
@@ -82,7 +89,7 @@ func init() {
 	//fmt.Println("Redis client connected successfully...")
 
 	// Collections
-	authCollection = mongoclient.Database("golang_mongodb").Collection("users")
+	authCollection = mongoclient.Database("colosach").Collection("users")
 	userService = services.NewUserServiceImpl(authCollection, ctx)
 	authService = services.NewAuthService(authCollection, ctx)
 	AuthController = controllers.NewAuthController(authService, userService, ctx, authCollection, temp)
@@ -91,6 +98,10 @@ func init() {
 	UserController = controllers.NewUserController(userService)
 	UserRouteController = routes.NewRouteUserController(UserController)
 
+	libCollection = mongoclient.Database("colosach").Collection("libraries")
+	libService = services.NewLibService(libCollection, ctx)
+	libController = controllers.NewLibraryController(libService)
+	libRouteController = routes.NewLibRouteController(libController)
 	server = gin.Default()
 }
 
