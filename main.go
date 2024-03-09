@@ -125,11 +125,11 @@ func main() {
 	//	panic(err)
 	//}
 
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{os.Getenv("CLIENT_ORIGIN"), os.Getenv("CLIENT_URL")}
-	corsConfig.AllowCredentials = true
+	// corsConfig := cors.DefaultConfig()
+	// corsConfig.AllowOrigins = []string{os.Getenv("CLIENT_ORIGIN"), os.Getenv("CLIENT_URL")}
+	// corsConfig.AllowCredentials = true
 
-	server.Use(cors.New(corsConfig))
+	server.Use(cors.Default())
 
 	router := server.Group("/api")
 	router.GET("/health-checker", func(ctx *gin.Context) {
