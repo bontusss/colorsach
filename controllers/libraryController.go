@@ -1,12 +1,13 @@
 package controllers
 
 import (
-	"github.com/bontusss/colosach/models"
-	"github.com/bontusss/colosach/services"
-	"github.com/bontusss/colosach/utils"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"github.com/bontusss/colosach/models"
+	"github.com/bontusss/colosach/services"
+
+	"github.com/gin-gonic/gin"
 )
 
 type LibraryController struct {
@@ -18,13 +19,11 @@ func NewLibraryController(libService services.LibraryService) LibraryController 
 }
 
 func (l *LibraryController) CreateLibrary(c *gin.Context) {
-	var lib *models.CreateLibraryRequest
+	lib := &models.CreateLibraryRequest{}
 
-	lib.User = utils.GetCurrentUser(c)
-	if lib.User == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
-		return
-	}
+	currentUser := c.MustGet("currentUser").(*models.DBResponse)
+	libOwner := models.FilteredResponse(currentUser)
+	lib.Owner = &libOwner
 
 	if err := c.ShouldBindJSON(&lib); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

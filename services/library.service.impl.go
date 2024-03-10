@@ -3,11 +3,12 @@ package services
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/bontusss/colosach/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type LibraryServiceImpl struct {
@@ -43,7 +44,6 @@ func (ls *LibraryServiceImpl) CreateLibrary(lib *models.CreateLibraryRequest) (*
 	lib.CreatedAt = time.Now()
 	lib.UpdatedAt = lib.CreatedAt
 	lib.Public = true
-
 	res, err := ls.LibraryCollection.InsertOne(ls.ctx, lib)
 	if err != nil {
 		if er, ok := err.(mongo.WriteException); ok && er.WriteErrors[0].Code == 11000 {

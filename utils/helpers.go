@@ -16,14 +16,6 @@ func ToDoc(v interface{}) (doc *bson.D, err error) {
 }
 
 func GetCurrentUser(c *gin.Context) *models.DBResponse {
-	user, exists := c.Get("currentUser")
-	if !exists {
-		return nil
-	}
-	currentUser, ok := user.(*models.DBResponse)
-	if !ok {
-		return nil
-	}
-
-	return currentUser
+	userData := c.MustGet("currentUser").(*models.DBResponse)
+	return userData
 }

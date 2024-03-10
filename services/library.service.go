@@ -1,6 +1,8 @@
 package services
 
-import "github.com/bontusss/colosach/models"
+import (
+	"github.com/bontusss/colosach/models"
+)
 
 type LibraryService interface {
 	CreateLibrary(*models.CreateLibraryRequest) (*models.DBLibrary, error)

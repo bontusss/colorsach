@@ -17,3 +17,5 @@ This is the service that powers the colosach website written in golang language 
 7. **POST** `/api/auth/forgot-password` => Requires an email, returns a 201 and success message if successful, an error message otherwise.
 8. **PATCH** `/api/auth/reset-password/:resetToken`
 9. **GET** `/api/auth/logout`
+10. **GET** `/api/auth/users/me` => Returns the current logged in user info
+11. **POST** `/api/libs` => Requires a title and description. Creates a new library with public is default.

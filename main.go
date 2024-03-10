@@ -10,6 +10,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/bontusss/colosach/controllers"
 	"github.com/bontusss/colosach/routes"
 	"github.com/bontusss/colosach/services"
@@ -19,10 +24,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"html/template"
-	"log"
-	"net/http"
-	"os"
 )
 
 var (
@@ -47,7 +48,9 @@ var (
 	libController      controllers.LibraryController
 	libCollection      *mongo.Collection
 	libRouteController routes.LibraryRouteController
-	temp               *template.Template
+
+	// Templates
+	temp *template.Template
 )
 
 func init() {
@@ -102,6 +105,7 @@ func init() {
 	libService = services.NewLibService(libCollection, ctx)
 	libController = controllers.NewLibraryController(libService)
 	libRouteController = routes.NewLibRouteController(libController)
+
 	server = gin.Default()
 }
 
@@ -125,11 +129,12 @@ func main() {
 	//	panic(err)
 	//}
 
-	// corsConfig := cors.DefaultConfig()
+	corsConfig := cors.DefaultConfig()
 	// corsConfig.AllowOrigins = []string{os.Getenv("CLIENT_ORIGIN"), os.Getenv("CLIENT_URL")}
-	// corsConfig.AllowCredentials = true
-
-	server.Use(cors.Default())
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowCredentials = true
+	corsConfig.AddAllowHeaders("Authorization")
+	server.Use(cors.New(corsConfig))
 
 	router := server.Group("/api")
 	router.GET("/health-checker", func(ctx *gin.Context) {
@@ -140,5 +145,6 @@ func main() {
 
 	AuthRouteController.AuthRoute(router, userService)
 	UserRouteController.UserRoute(router, userService)
+	libRouteController.LibraryRoute(router, userService)
 	log.Fatal(server.Run(":" + os.Getenv("PORT")))
 }
