@@ -49,6 +49,12 @@ var (
 	libCollection      *mongo.Collection
 	libRouteController routes.LibraryRouteController
 
+	// for Images
+	imageService         services.ImageService
+	ImageController      controllers.ImageController
+	imageCollection      *mongo.Collection
+	ImageRouteController routes.ImageRouteController
+
 	// Templates
 	temp *template.Template
 )
@@ -106,6 +112,11 @@ func init() {
 	libController = controllers.NewLibraryController(libService)
 	libRouteController = routes.NewLibRouteController(libController)
 
+	imageCollection = mongoclient.Database("colosach").Collection("images")
+	imageService = services.NewImageService(imageCollection, ctx)
+	ImageController = controllers.NewImageController(imageService)
+	ImageRouteController = routes.NewImageRouteController(ImageController)
+
 	server = gin.Default()
 }
 
@@ -146,5 +157,6 @@ func main() {
 	AuthRouteController.AuthRoute(router, userService)
 	UserRouteController.UserRoute(router, userService)
 	libRouteController.LibraryRoute(router, userService)
+	ImageRouteController.ImageRoute(router, userService)
 	log.Fatal(server.Run(":" + os.Getenv("PORT")))
 }

@@ -19,3 +19,4 @@ This is the service that powers the colosach website written in golang language 
 9. **GET** `/api/auth/logout`
 10. **GET** `/api/auth/users/me` => Returns the current logged in user info
 11. **POST** `/api/libs` => Requires a title and description. Creates a new library with public is default.
+12. **POST** `/api/images/upload => Requires a name and optional tags and return an image url
