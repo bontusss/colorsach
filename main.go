@@ -141,7 +141,7 @@ func main() {
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "alive"})
 	})
 
-	router.GET("/search", services.SearchPexel)
+	router.POST("/search", services.SearchPexel)
 
 	AuthRouteController.AuthRoute(router, userService)
 	UserRouteController.UserRoute(router, userService)
