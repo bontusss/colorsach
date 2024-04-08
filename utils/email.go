@@ -2,15 +2,15 @@ package utils
 
 import (
 	"bytes"
-	"crypto/tls"
 	"fmt"
-	"github.com/bontusss/colosach/config"
-	"github.com/bontusss/colosach/models"
-	"gopkg.in/gomail.v2"
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"text/template"
+
+	"github.com/bontusss/colosach/models"
+	"github.com/wneessen/go-mail"
 
 	"github.com/k3a/html2text"
 )
@@ -45,19 +45,20 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 }
 
 func SendEmail(user *models.DBResponse, data *EmailData, templateName string) error {
-	loadConfig, err := config.LoadConfig(".")
-
-	if err != nil {
-		log.Fatal("could not load loadConfig", err)
-	}
-
 	// Sender data.
-	from := loadConfig.EmailFrom
-	smtpPass := loadConfig.SMTPPass
-	smtpUser := loadConfig.SMTPUser
+	from := os.Getenv("EMAIL_FROM")
+	// from := "colosach.app@gmail.com"
+	smtpPass := os.Getenv("SMTP_PASS")
+	// smtpPass := "kfbk fiop hbry zmom"
+	smtpUser := os.Getenv("SMTP_USER")
 	to := user.Email
-	smtpHost := loadConfig.SMTPHost
-	smtpPort := loadConfig.SMTPPort
+	smtpHost := os.Getenv("SMTP_HOST")
+	// smtpHost := "smtp.gmail.com"
+	smtpPort := os.Getenv("SMTP_PORT")
+	port, err := strconv.Atoi(smtpPort)
+	if err != nil {
+		return err
+	}
 
 	var body bytes.Buffer
 
@@ -70,20 +71,21 @@ func SendEmail(user *models.DBResponse, data *EmailData, templateName string) er
 	template.Execute(&body, &data)
 	fmt.Println(template.Name())
 
-	m := gomail.NewMessage()
-
-	m.SetHeader("From", from)
-	m.SetHeader("To", to)
-	m.SetHeader("Subject", data.Subject)
-	m.SetBody("text/html", body.String())
-	m.AddAlternative("text/plain", html2text.HTML2Text(body.String()))
-
-	d := gomail.NewDialer(smtpHost, smtpPort, smtpUser, smtpPass)
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	// Send Email
-	if err := d.DialAndSend(m); err != nil {
-		return err
+	m := mail.NewMsg()
+	if err := m.From(from); err != nil {
+		log.Fatalf("failed to set From address: %s", err)
+	}
+	if err := m.To(to); err != nil {
+		log.Fatalf("failed to set To address: %s", err)
+	}
+	m.Subject(data.Subject)
+	m.SetBodyString(mail.TypeTextPlain, html2text.HTML2Text(body.String()))
+	c, err := mail.NewClient(smtpHost, mail.WithPort(port), mail.WithSMTPAuth(mail.SMTPAuthPlain), mail.WithUsername(smtpUser), mail.WithPassword(smtpPass))
+	if err != nil {
+		log.Fatalf("failed to create mail client: %s", err)
+	}
+	if err := c.DialAndSend(m); err != nil {
+		log.Fatalf("failed to send mail: %s", err)
 	}
 	return nil
 }
