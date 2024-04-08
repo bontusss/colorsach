@@ -3,13 +3,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/bontusss/colosach/models"
-	"github.com/bontusss/colosach/services"
-	"github.com/bontusss/colosach/utils"
-	"github.com/gin-gonic/gin"
-	"github.com/thanhpk/randstr"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"html/template"
 	"log"
 	"net/http"
@@ -17,6 +10,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bontusss/colosach/models"
+	"github.com/bontusss/colosach/services"
+	"github.com/bontusss/colosach/utils"
+	"github.com/gin-gonic/gin"
+	"github.com/thanhpk/randstr"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type AuthController struct {
@@ -100,6 +101,12 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	}
 
 	user, err := ac.userService.FindUserByEmail(credentials.Email)
+
+	// check if user email is verified
+	if !user.Verified {
+		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User email is not verified."})
+		return
+	}
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})

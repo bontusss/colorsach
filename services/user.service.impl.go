@@ -65,8 +65,8 @@ func (uc *UserServiceImpl) UpdateUserById(id string, data *models.UpdateInput) (
 	fmt.Println(data)
 
 	obId, _ := primitive.ObjectIDFromHex(id)
-	query := bson.D{{"_id", obId}}
-	update := bson.D{{"$set", doc}}
+	query := bson.D{{Key: "_id", Value: obId}}
+	update := bson.D{{Key: "$set", Value: doc}}
 	result := uc.collection.FindOneAndUpdate(uc.ctx, query, update, options.FindOneAndUpdate().SetReturnDocument(1))
 
 	var updatedUser *models.DBResponse
