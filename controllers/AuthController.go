@@ -20,6 +20,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// The AuthController.go file in the controllers directory manages user authentication processes such as user sign-up,
+// login, token generation, email verification, password reset, and logout.
+// It interacts with services and the database to handle these operations securely and efficiently.
+
 type AuthController struct {
 	authService services.AuthService
 	userService services.UserService
@@ -32,6 +36,27 @@ func NewAuthController(authService services.AuthService, userService services.Us
 	return AuthController{authService, userService, ctx, collection, temp}
 }
 
+// SignUpUser is a function that handles the user sign-up process.
+// It first validates the user input, checks if the passwords match, and then proceeds to create a new user in the database.
+// If the user is successfully created, it generates a verification code, updates the user's record in the database with the verification code,
+// and sends a verification email to the user. If any error occurs during this process, it returns an appropriate error message.
+// Example:
+// POST /api/signup
+// Request Body:
+//
+//	{
+//	  "username": "newuser",
+//	  "email": "newuser@example.com",
+//	  "password": "password",
+//	  "passwordConfirm": "password"
+//	}
+//
+// Response:
+//
+//	{
+//	  "status": "success",
+//	  "message": "We sent an email with a verification code to newuser@example.com"
+//	}
 func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	var user *models.SignUpInput
 
@@ -42,6 +67,12 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	if user.Password != user.PasswordConfirm {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Passwords do not match"})
+		return
+	}
+
+	err := ac.collection.FindOne(ac.ctx, bson.M{"username": user.Username}).Decode(&user)
+	if err == nil {
+		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "username already exists"})
 		return
 	}
 
@@ -57,41 +88,51 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		return
 	}
 
-	//generate verification code
-	fmt.Println("Generating code")
-	verificationCode := randstr.String(20)
-	_, err = ac.collection.UpdateOne(ac.ctx, bson.M{"email": newUser.Email}, bson.M{"$set": bson.M{"verificationCode": verificationCode}})
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	fmt.Println("User Updated")
-	var firstName = newUser.Name
-	if strings.Contains(firstName, " ") {
-		firstName = strings.Split(firstName, " ")[1]
+	if !user.Verified {
+		//generate verification code
+		fmt.Println("Generating code")
+		verificationCode := randstr.String(20)
+		_, err = ac.collection.UpdateOne(ac.ctx, bson.M{"email": newUser.Email}, bson.M{"$set": bson.M{"verificationCode": verificationCode}})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		fmt.Println("User Updated")
+
+		//send  email verification mail
+		emailData := utils.EmailData{
+			URL:      os.Getenv("PORT") + "/verify-email/" + verificationCode,
+			Username: newUser.Username,
+			Subject:  "Your Colosach verification code",
+		}
+		fmt.Println("code generated")
+		err = utils.SendEmail(newUser, &emailData, "verificationCode.html")
+		fmt.Println("Starting to send mail")
+		if err != nil {
+			fmt.Println(err)
+			ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": "There was an error sending email"})
+			return
+		}
+		fmt.Println(verificationCode)
+		fmt.Println(emailData)
+		message := "We sent an email with a verification code to " + user.Email
+		ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": message})
+	} else {
+		ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": "Registered successfully"})
 	}
 
-	//send  email verification mail
-	emailData := utils.EmailData{
-		URL:       os.Getenv("PORT") + "/verify-email/" + verificationCode,
-		FirstName: firstName,
-		Subject:   "Your Colosach verification code",
-	}
-	fmt.Println("code generated")
-	err = utils.SendEmail(newUser, &emailData, "verificationCode.html")
-	fmt.Println("Starting to send mail")
-	if err != nil {
-		fmt.Println(err)
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "success", "message": "There was an error sending email"})
-		return
-	}
-	fmt.Println(verificationCode)
-	fmt.Println(emailData)
-	message := "We sent an email with a verification code to " + user.Email
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": message})
 }
 
-// SignInUser => Logging in user
+// SignInUser is a function to handle user sign in
+// It takes a gin context as a parameter
+// Example of how to use the function
+//
+//	func main() {
+//		router := gin.Default()
+//		authController := controllers.NewAuthController()
+//		router.POST("/signup", authController.SignUpUser)
+//		router.Run(":8080")
+//	}
 func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	var credentials *models.SignInInput
 
@@ -281,17 +322,12 @@ func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, gin.H{"status": "success", "message": err.Error()})
 		return
 	}
-	var firstName = user.Name
-
-	if strings.Contains(firstName, " ") {
-		firstName = strings.Split(firstName, " ")[1]
-	}
 
 	// ? Send Email
 	emailData := utils.EmailData{
-		URL:       os.Getenv("CLIENT_ORIGIN") + "/reset-password/" + passwordResetToken,
-		FirstName: firstName,
-		Subject:   "Your password reset token (valid for 10min)",
+		URL:      os.Getenv("CLIENT_ORIGIN") + "/reset-password/" + passwordResetToken,
+		Username: user.Username,
+		Subject:  "Your password reset token (valid for 10min)",
 	}
 
 	err = utils.SendEmail(user, &emailData, "resetPassword.html")

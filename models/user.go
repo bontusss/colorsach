@@ -1,13 +1,14 @@
 package models
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // SignUpInput 👈 SignUpInput struct
 type SignUpInput struct {
-	Name               string    `json:"name" bson:"name" binding:"required"`
+	Username           string    `json:"username" bson:"username" binding:"required"`
 	Email              string    `json:"email" bson:"email" binding:"required"`
 	Password           string    `json:"password" bson:"password" binding:"required,min=8"`
 	PasswordConfirm    string    `json:"passwordConfirm" bson:"passwordConfirm,omitempty" binding:"required"`
@@ -20,6 +21,7 @@ type SignUpInput struct {
 	UpdatedAt          time.Time `json:"updated_at" bson:"updated_at"`
 }
 
+
 // SignInInput 👈 SignInInput struct
 type SignInInput struct {
 	Email    string `json:"email" bson:"email" binding:"required"`
@@ -29,7 +31,7 @@ type SignInInput struct {
 // DBResponse 👈 DBResponse struct
 type DBResponse struct {
 	ID                 primitive.ObjectID `json:"id" bson:"_id"`
-	Name               string             `json:"name" bson:"name"`
+	Username           string             `json:"username" bson:"username"`
 	Email              string             `json:"email" bson:"email"`
 	Password           string             `json:"password" bson:"password"`
 	PasswordConfirm    string             `json:"passwordConfirm,omitempty" bson:"passwordConfirm,omitempty"`
@@ -58,7 +60,7 @@ type UpdateInput struct {
 // 👈 UserResponse struct
 type UserResponse struct {
 	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Name      string             `json:"name,omitempty" bson:"name,omitempty"`
+	Username  string             `json:"username,omitempty" bson:"username,omitempty"`
 	Email     string             `json:"email,omitempty" bson:"email,omitempty"`
 	Role      string             `json:"role,omitempty" bson:"role,omitempty"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
@@ -80,7 +82,7 @@ func FilteredResponse(user *DBResponse) UserResponse {
 	return UserResponse{
 		ID:        user.ID,
 		Email:     user.Email,
-		Name:      user.Name,
+		Username:  user.Username,
 		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,

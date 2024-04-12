@@ -17,7 +17,7 @@ import (
 
 type EmailData struct {
 	URL       string
-	FirstName string
+	Username string
 	Subject   string
 }
 

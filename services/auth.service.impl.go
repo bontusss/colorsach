@@ -21,12 +21,14 @@ func NewAuthService(collection *mongo.Collection, ctx context.Context) AuthServi
 	return &AuthServiceImpl{collection, ctx}
 }
 
+
 func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBResponse, error) {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = user.CreatedAt
 	user.Email = strings.ToLower(user.Email)
+	user.Password = ""
 	user.PasswordConfirm = ""
-	user.Verified = false
+	// user.Verified = false
 	user.Role = "user"
 
 	hashedPassword, _ := utils.HashPassword(user.Password)
@@ -44,6 +46,9 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	opt := options.Index()
 	opt.SetUnique(true)
 	index := mongo.IndexModel{Keys: bson.M{"email": 1}, Options: opt}
+	// opt2 := options.Index()
+	// opt2.SetUnique(true)
+	// index2 := mongo.IndexModel{Keys: bson.M{"username": 1}, Options: opt2}
 
 	if _, err := uc.collection.Indexes().CreateOne(uc.ctx, index); err != nil {
 		return nil, errors.New("could not create index for email")
