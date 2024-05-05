@@ -1,0 +1,424 @@
+basePath: /api
+definitions:
+  models.DBLibrary:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      image:
+        type: string
+      owner:
+        $ref: '#/definitions/models.UserResponse'
+      public:
+        type: boolean
+      title:
+        type: string
+      updatedAt:
+        type: string
+    required:
+    - description
+    - title
+    type: object
+  models.ForgotPasswordInput:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  models.ImageResponse:
+    properties:
+      id:
+        type: string
+      image_url:
+        type: string
+      likes:
+        type: integer
+      name:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      uploaded_by:
+        $ref: '#/definitions/models.UserResponse'
+    type: object
+  models.ResetPasswordInput:
+    properties:
+      password:
+        type: string
+      passwordConfirm:
+        type: string
+    type: object
+  models.SignInInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.SignUpInput:
+    properties:
+      Followers:
+        type: integer
+      created_at:
+        type: string
+      email:
+        type: string
+      following:
+        type: integer
+      images:
+        items:
+          $ref: '#/definitions/models.ImageResponse'
+        type: array
+      is_first_login:
+        type: boolean
+      libraries:
+        items:
+          $ref: '#/definitions/models.DBLibrary'
+        type: array
+      password:
+        minLength: 8
+        type: string
+      passwordConfirm:
+        type: string
+      resetPasswordAt:
+        type: string
+      resetPasswordToken:
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/models.UserRole'
+        description: RawPassword        string           `json:"raw_password"`
+      updated_at:
+        type: string
+      username:
+        type: string
+      verificationCode:
+        type: string
+      verified:
+        type: boolean
+    required:
+    - email
+    - password
+    - passwordConfirm
+    - username
+    type: object
+  models.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserRole:
+    enum:
+    - user
+    - admin
+    - super_admin
+    type: string
+    x-enum-varnames:
+    - UserRoleUser
+    - UserRoleAdmin
+    - UserRoleSuperAdmin
+  services.Photo:
+    properties:
+      alt:
+        type: string
+      avg_color:
+        type: string
+      height:
+        type: integer
+      id:
+        type: integer
+      liked:
+        type: boolean
+      photographer:
+        type: string
+      photographer_id:
+        type: integer
+      photographer_url:
+        type: string
+      src:
+        $ref: '#/definitions/services.Source'
+      url:
+        type: string
+      width:
+        type: integer
+    type: object
+  services.SearchPhotoResponse:
+    properties:
+      next_page:
+        type: string
+      page:
+        type: integer
+      per_page:
+        type: integer
+      photos:
+        items:
+          $ref: '#/definitions/services.Photo'
+        type: array
+      prev_page:
+        type: string
+      total_results:
+        type: integer
+    type: object
+  services.Source:
+    properties:
+      landscape:
+        type: string
+      large:
+        type: string
+      large2x:
+        type: string
+      medium:
+        type: string
+      original:
+        type: string
+      portrait:
+        type: string
+      small:
+        type: string
+      tiny:
+        type: string
+    type: object
+  services.searchRequest:
+    properties:
+      color:
+        type: string
+      orientation:
+        description: 'Desired photo orientation. The current supported orientations
+          are: landscape, portrait or square.'
+        type: string
+      page:
+        description: 'The page number you are requesting. Default: 1'
+        type: integer
+      per-page:
+        description: 'The number of results you are requesting per page. Default:
+          15 Max: 80'
+        type: integer
+      query:
+        description: The search query. Ocean, Tigers, Pears, etc.
+        type: string
+      size:
+        description: 'Minimum photo size. The current supported sizes are: large(24MP),
+          medium(12MP) or small(4MP).'
+        type: string
+    required:
+    - color
+    - query
+    type: object
+host: localhost:8000
+info:
+  contact:
+    email: ikwecheghu@gmail.com
+    name: API Support
+  description: This is the API for Colosach
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Colosach API
+  version: "1.0"
+paths:
+  /api/auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: ForgotPassword
+      parameters:
+      - description: ForgotPasswordInput
+        in: body
+        name: ForgotPasswordInput
+        required: true
+        schema:
+          $ref: '#/definitions/models.ForgotPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "502":
+          description: Bad Gateway
+      summary: ForgotPassword
+      tags:
+      - auth/forgot-password
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: SignInUser
+      parameters:
+      - description: SignInInput
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: SignInUser
+      tags:
+      - auth/login
+  /api/auth/logout:
+    get:
+      consumes:
+      - application/json
+      description: LogoutUser
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+      summary: LogoutUser
+      tags:
+      - auth/logout
+  /api/auth/refresh:
+    get:
+      consumes:
+      - application/json
+      description: RefreshAccessToken
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: RefreshAccessToken
+      tags:
+      - auth/refresh
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: SignUpUser
+      parameters:
+      - description: SignUpInput
+        in: body
+        name: SignUpInput
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignUpInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: SignUpUser
+      tags:
+      - auth/register
+  /api/auth/reset-password/{resetToken}:
+    post:
+      consumes:
+      - application/json
+      description: ResetPassword
+      parameters:
+      - description: Reset Token
+        in: path
+        name: resetToken
+        required: true
+        type: string
+      - description: ResetPasswordInput
+        in: body
+        name: ResetPasswordInput
+        required: true
+        schema:
+          $ref: '#/definitions/models.ResetPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: ResetPassword
+      tags:
+      - auth/reset-password
+  /api/auth/verify-email/{verificationCode}:
+    get:
+      consumes:
+      - application/json
+      description: VerifyEmail
+      parameters:
+      - description: Verification Code
+        in: path
+        name: verificationCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: Forbidden
+      summary: VerifyEmail
+      tags:
+      - auth/verify-email
+  /api/search:
+    post:
+      consumes:
+      - application/json
+      description: Requires a color and query and returns a list of photos
+      parameters:
+      - description: Search request
+        in: body
+        name: searchRequest
+        required: true
+        schema:
+          $ref: '#/definitions/services.searchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.SearchPhotoResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Search Pexel photos
+      tags:
+      - search
+swagger: "2.0"

@@ -20,6 +20,50 @@ type searchRequest struct {
 	Orientation string `json:"orientation"`              // Desired photo orientation. The current supported orientations are: landscape, portrait or square.
 }
 
+type Photo struct {
+	ID              int    `json:"id"`
+	Width           int    `json:"width"`
+	Height          int    `json:"height"`
+	URL             string `json:"url"`
+	Photographer    string `json:"photographer"`
+	PhotographerURL string `json:"photographer_url"`
+	PhotographerID  int    `json:"photographer_id"`
+	AvgColor        string `json:"avg_color"`
+	Liked           bool   `json:"liked"`
+	Src             Source `json:"src"`
+	Alt             string `json:"alt"`
+}
+
+type Source struct {
+	Original  string `json:"original"`
+	Large2X   string `json:"large2x"`
+	Large     string `json:"large"`
+	Medium    string `json:"medium"`
+	Small     string `json:"small"`
+	Portrait  string `json:"portrait"`
+	Landscape string `json:"landscape"`
+	Tiny      string `json:"tiny"`
+}
+
+type SearchPhotoResponse struct {
+	TotalResults int      `json:"total_results"`
+	Page         int      `json:"page"`
+	PerPage      int      `json:"per_page"`
+	Photos       []*Photo `json:"photos"`
+	NextPage     string   `json:"next_page"`
+	PrevPage     string   `json:"prev_page"`
+}
+
+// @Summary Search Pexel photos
+// @Description Requires a color and query and returns a list of photos
+// @Tags search
+// @Accept json
+// @Produce json
+// @Param searchRequest body searchRequest true "Search request"
+// @Success 200 {object} SearchPhotoResponse
+// @Failure 400 {object} error
+// @Failure 500 {object} error
+// @Router /api/search [post]
 func SearchPexel(c *gin.Context) {
 	var req searchRequest
 	err := c.ShouldBindJSON(&req)
