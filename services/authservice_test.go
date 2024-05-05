@@ -15,9 +15,11 @@ import (
 )
 
 func TestSignUpUser(t *testing.T) {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Fatal("Error loading app.env file", err)
+	if os.Getenv("ENV") == "dev" {
+		err := godotenv.Load("../.env")
+		if err != nil {
+			log.Fatal("Error loading app.env file", err)
+		}
 	}
 
 	// Create a new context and a new mongo client
