@@ -18,6 +18,7 @@ func NewImageController(imageService services.ImageService) ImageController {
 }
 
 func (i *ImageController) UploadImage(c *gin.Context) {
+	// TODO: check if a user is logged in
 	// Parse from form data
 	image := &models.UploadImageInput{}
 	image.Name = c.PostForm("name")

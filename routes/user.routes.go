@@ -19,5 +19,8 @@ func (uc *UserRouteController) UserRoute(rg *gin.RouterGroup, userService servic
 
 	router := rg.Group("users")
 	router.Use(middleware.DeserializeUser(userService))
+	// Get current user details
 	router.GET("/me", uc.userController.GetMe)
+	// make a user an admin
+	router.PATCH("/make-admin/:user-id", uc.userController.MakeAdminUser)
 }

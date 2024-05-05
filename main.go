@@ -60,10 +60,15 @@ var (
 )
 
 func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading app.env file", err)
+	if os.Getenv("ENV") == "dev" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatal("Error loading app.env file", err)
+		}
 	}
+	fmt.Printf("running on %s mode\n", os.Getenv("ENV"))
+
+	// load templates
 	temp = template.Must(template.ParseGlob("templates/*.html"))
 	ctx = context.TODO()
 	// Connect to MongoDB
@@ -121,6 +126,10 @@ func init() {
 }
 
 func main() {
+	// serve static file
+	fs := http.FileServer(http.Dir("templates/assets"))
+	http.Handle("/static/", http.StripPrefix("/assets/", fs))
+	
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading app.env file")

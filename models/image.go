@@ -10,8 +10,10 @@ type UploadImageInput struct {
 }
 
 type ImageResponse struct {
-	Id        primitive.ObjectID `json:"id" bson:"_id"`
-	Name      string             `json:"name" bson:"name"`
-	Tags      []string           `json:"tags" bson:"tags"`
-	Image_url string             `json:"image_url" bson:"image_url"`
+	Id          primitive.ObjectID `json:"id" bson:"_id"`
+	Name        string             `json:"name" bson:"name"`
+	Tags        []string           `json:"tags" bson:"tags"`
+	Image_url   string             `json:"image_url" bson:"image_url"`
+	Likes       int                `json:"likes" bson:"likes"`
+	Uploaded_By *UserResponse      `json:"uploaded_by" bson:"uploaded_by"`
 }

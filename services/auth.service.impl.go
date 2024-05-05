@@ -3,13 +3,14 @@ package services
 import (
 	"context"
 	"errors"
+	"strings"
+	"time"
+
 	"github.com/bontusss/colosach/models"
 	"github.com/bontusss/colosach/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"strings"
-	"time"
 )
 
 type AuthServiceImpl struct {
@@ -21,18 +22,17 @@ func NewAuthService(collection *mongo.Collection, ctx context.Context) AuthServi
 	return &AuthServiceImpl{collection, ctx}
 }
 
-
 func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBResponse, error) {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = user.CreatedAt
 	user.Email = strings.ToLower(user.Email)
-	user.Password = ""
-	user.PasswordConfirm = ""
-	// user.Verified = false
-	user.Role = "user"
+	user.Role = models.UserRoleUser
+	user.IsFirstLogin = true
 
+	// fmt.Println("just before signing", user.Password, user.PasswordConfirm, user.Username)
 	hashedPassword, _ := utils.HashPassword(user.Password)
 	user.Password = hashedPassword
+	// fmt.Println("after crypt", user.Password)
 	res, err := uc.collection.InsertOne(uc.ctx, &user)
 
 	if err != nil {

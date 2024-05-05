@@ -6,6 +6,7 @@ import (
 
 	"github.com/bontusss/colosach/models"
 	"github.com/bontusss/colosach/services"
+	"github.com/bontusss/colosach/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,8 +21,9 @@ func NewLibraryController(libService services.LibraryService) LibraryController 
 
 func (l *LibraryController) CreateLibrary(c *gin.Context) {
 	lib := &models.CreateLibraryRequest{}
-
-	currentUser := c.MustGet("currentUser").(*models.DBResponse)
+	// check if user is logged in
+	// currentUser := c.MustGet("currentUser").(*models.DBResponse)
+	currentUser := utils.GetCurrentUser(c)
 	libOwner := models.FilteredResponse(currentUser)
 	lib.Owner = &libOwner
 

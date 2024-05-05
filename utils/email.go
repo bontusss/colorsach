@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -11,14 +10,23 @@ import (
 
 	"github.com/bontusss/colosach/models"
 	"github.com/wneessen/go-mail"
-
-	"github.com/k3a/html2text"
 )
 
 type EmailData struct {
-	URL       string
-	Username string
-	Subject   string
+	URL              string
+	Username         string
+	Subject          string
+	Year             int
+	BannerImageUrl   string
+	PhotographerName string
+	PhotographerUrl  string
+	ImageUrl         string
+	AvgColor         string
+	Logo             string
+	Instagram        string
+	Linkedin         string
+	Arrow            string
+	X                string
 }
 
 // 👇 Email template parser
@@ -35,7 +43,7 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 		return nil
 	})
 
-	fmt.Println("Am parsing templates...")
+	// fmt.Println("Am parsing templates...")
 
 	if err != nil {
 		return nil, err
@@ -47,13 +55,10 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 func SendEmail(user *models.DBResponse, data *EmailData, templateName string) error {
 	// Sender data.
 	from := os.Getenv("EMAIL_FROM")
-	// from := "colosach.app@gmail.com"
 	smtpPass := os.Getenv("SMTP_PASS")
-	// smtpPass := "kfbk fiop hbry zmom"
 	smtpUser := os.Getenv("SMTP_USER")
 	to := user.Email
 	smtpHost := os.Getenv("SMTP_HOST")
-	// smtpHost := "smtp.gmail.com"
 	smtpPort := os.Getenv("SMTP_PORT")
 	port, err := strconv.Atoi(smtpPort)
 	if err != nil {
@@ -61,7 +66,6 @@ func SendEmail(user *models.DBResponse, data *EmailData, templateName string) er
 	}
 
 	var body bytes.Buffer
-
 	template, err := ParseTemplateDir("templates")
 	if err != nil {
 		log.Fatal("Could not parse template", err)
@@ -69,7 +73,7 @@ func SendEmail(user *models.DBResponse, data *EmailData, templateName string) er
 
 	template = template.Lookup(templateName)
 	template.Execute(&body, &data)
-	fmt.Println(template.Name())
+	// fmt.Println(template.Name())
 
 	m := mail.NewMsg()
 	if err := m.From(from); err != nil {
@@ -79,8 +83,8 @@ func SendEmail(user *models.DBResponse, data *EmailData, templateName string) er
 		log.Fatalf("failed to set To address: %s", err)
 	}
 	m.Subject(data.Subject)
-	m.SetBodyString(mail.TypeTextPlain, html2text.HTML2Text(body.String()))
-	c, err := mail.NewClient(smtpHost, mail.WithPort(port), mail.WithSMTPAuth(mail.SMTPAuthPlain), mail.WithUsername(smtpUser), mail.WithPassword(smtpPass))
+	m.SetBodyString(mail.TypeTextHTML, body.String())
+	c, err := mail.NewClient(smtpHost, mail.WithPort(port), mail.WithSMTPAuth(mail.SMTPAuthPlain), mail.WithTLSPortPolicy(mail.TLSMandatory), mail.WithUsername(smtpUser), mail.WithPassword(smtpPass))
 	if err != nil {
 		log.Fatalf("failed to create mail client: %s", err)
 	}

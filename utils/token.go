@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+// CreateToken is a function that generates a JWT token with the given time to live, payload, and private key.
+// It returns the generated token and any error that occurred during the process.
+// Example:
+// token, err := CreateToken(time.Hour, "payload", "private_key")
+
 func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (string, error) {
 	decodedPrivateKey, err := base64.StdEncoding.DecodeString(privateKey)
 	if err != nil {

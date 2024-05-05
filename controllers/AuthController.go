@@ -20,7 +20,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// The AuthController.go file in the controllers directory manages user authentication processes such as user sign-up,
 // login, token generation, email verification, password reset, and logout.
 // It interacts with services and the database to handle these operations securely and efficiently.
 
@@ -76,47 +75,67 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		return
 	}
 
+	fmt.Println("signing up with: ", user.Email, user.Password, user.PasswordConfirm)
+
 	newUser, err := ac.authService.SignUpUser(user)
 	fmt.Println("User registered")
 
 	if err != nil {
 		if strings.Contains(err.Error(), "email already exist") {
 			ctx.JSON(http.StatusConflict, gin.H{"status": "error", "message": err.Error()})
-			return
+			// log.Fatal(err)
 		}
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+
 		return
 	}
 
 	if !user.Verified {
 		//generate verification code
-		fmt.Println("Generating code")
+		// fmt.Println("Generating code")
 		verificationCode := randstr.String(20)
 		_, err = ac.collection.UpdateOne(ac.ctx, bson.M{"email": newUser.Email}, bson.M{"$set": bson.M{"verificationCode": verificationCode}})
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			// log.Fatal(err)
 		}
-		fmt.Println("User Updated")
+
+		randImage, err := services.GetRandomImage()
+		if err != nil {
+			// is it necessary to stop process because of this?
+			log.Println("error getting image for email template")
+		}
 
 		//send  email verification mail
 		emailData := utils.EmailData{
-			URL:      os.Getenv("PORT") + "/verify-email/" + verificationCode,
-			Username: newUser.Username,
-			Subject:  "Your Colosach verification code",
+			URL:              os.Getenv("CLIENT_URL") + verificationCode,
+			Username:         newUser.Username,
+			Subject:          "Your Colosach Verification Code",
+			Year:             time.Now().Year(),
+			BannerImageUrl:   randImage.Src.Original,
+			PhotographerName: randImage.Photographer,
+			PhotographerUrl:  randImage.PhotographerURL,
+			ImageUrl:         randImage.URL,
+			AvgColor:         randImage.AvgColor,
+			Logo:             "/assets/logo.png",
+			Instagram:        "/assets/InstagramLogo.svg",
+			Linkedin:         "https://www.flaticon.com/free-icon/linkedin_2504923?term=linkedin&page=1&position=11&origin=search&related_id=2504923",
+			Arrow:            "/assets/ArrowRight.svg",
+			X:                "/assets/X.svg",
 		}
-		fmt.Println("code generated")
-		err = utils.SendEmail(newUser, &emailData, "verificationCode.html")
-		fmt.Println("Starting to send mail")
+		// fmt.Println("code generated")
+		err = utils.SendEmail(newUser, &emailData, "verificationCode.tmpl")
+		// fmt.Println("Starting to send mail")
 		if err != nil {
 			fmt.Println(err)
 			ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": "There was an error sending email"})
-			return
+			// log.Fatal(err)
 		}
-		fmt.Println(verificationCode)
-		fmt.Println(emailData)
+		// fmt.Println(verificationCode)
+		// fmt.Println(emailData)
 		message := "We sent an email with a verification code to " + user.Email
 		ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": message})
+
 	} else {
 		ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": "Registered successfully"})
 	}
@@ -138,27 +157,34 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&credentials); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-		return
+		log.Fatal(err)
 	}
 
+	fmt.Println("logging in with: ", credentials.Email, credentials.Password)
+
 	user, err := ac.userService.FindUserByEmail(credentials.Email)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+			// log.Fatal(err)
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+		// log.Fatal(err)
+	}
 
 	// check if user email is verified
 	if !user.Verified {
 		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User email is not verified."})
-		return
-	}
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
-			return
-		}
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-		return
+		log.Fatal("user email is not verified")
 	}
 
+
+	fmt.Println(user.Password)
+	fmt.Println(credentials.Password)
+	// hashedPassword, _ := utils.HashPassword(credentials.Password)
 	if err := utils.VerifyPassword(user.Password, credentials.Password); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Passwordd"})
 		return
 	}
 
@@ -186,13 +212,11 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	atma, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_MAXAGE"))
 	if err != nil {
 		log.Fatal("Error: ", err)
-		return
 	}
 
 	rtma, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
 	if err != nil {
 		log.Fatal("Error: ", err)
-		return
 	}
 	ctx.SetCookie("access_token", accessToken, atma*60, "/", "localhost", false, true)
 	ctx.SetCookie("refresh_token", refreshToken, rtma*60, "/", "localhost", false, true)

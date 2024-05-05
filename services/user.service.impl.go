@@ -56,6 +56,7 @@ func (uc *UserServiceImpl) FindUserByEmail(email string) (*models.DBResponse, er
 	return user, nil
 }
 
+// 
 func (uc *UserServiceImpl) UpdateUserById(id string, data *models.UpdateInput) (*models.DBResponse, error) {
 	doc, err := utils.ToDoc(data)
 	if err != nil {

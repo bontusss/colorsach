@@ -2,10 +2,13 @@ package services
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/kosa3/pexels-go"
+	"math/rand"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/kosa3/pexels-go"
 )
 
 type searchRequest struct {
@@ -41,4 +44,28 @@ func SearchPexel(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 	//return res
 
+}
+
+func randomize[T any] (list []T) T {
+	rand.New(rand.NewSource(time.Now().UnixNano()))
+	index := rand.Intn(len(list))
+	return list[index]
+}
+
+func GetRandomImage() (*pexels.Photo, error) {
+	queryList := []string{"car", "house", "animal", "leggo", "wildlife", "forest", "ship", "africa"}
+	colors := []string{"red", "blue", "green", "orange", "purple", "black"}
+	randomQuery := randomize(queryList)
+	randomColor := randomize(colors)
+
+	px := pexels.NewClient(os.Getenv("PEXELS_API_KEY"))
+	res, err := px.PhotoService.Search(context.Background(), &pexels.PhotoParams{
+		Query: randomQuery,
+		Color: randomColor,
+	})
+	if err != nil {
+		return nil, err
+	}
+	photo := randomize(res.Photos)
+	return photo, nil
 }
