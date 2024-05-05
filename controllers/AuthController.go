@@ -56,9 +56,9 @@ func NewAuthController(authService services.AuthService, userService services.Us
 //	  "status": "success",
 //	  "message": "We sent an email with a verification code to newuser@example.com"
 //	}
-// @Summary SignUpUser
-// @Description SignUpUser
-// @Tags auth/register
+// @Summary Register User
+// @Description Register a user
+// @Tags auth
 // @Accept json
 // @Produce json
 // @Param SignUpInput body models.SignUpInput true "SignUpInput"
@@ -163,7 +163,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 //	}
 // @Summary SignInUser
 // @Description SignInUser
-// @Tags auth/login
+// @Tags auth
 // @Accept  json
 // @Produce  json
 // @Param user body models.SignInInput true "SignInInput"
@@ -246,7 +246,7 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 
 // @Summary RefreshAccessToken
 // @Description RefreshAccessToken
-// @Tags auth/refresh
+// @Tags auth
 // @Accept json
 // @Produce json
 // @Success 200
@@ -300,7 +300,7 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 
 // @Summary LogoutUser
 // @Description LogoutUser
-// @Tags auth/logout
+// @Tags auth
 // @Accept json
 // @Produce json
 // @Success 200
@@ -317,7 +317,7 @@ func (ac *AuthController) LogoutUser(ctx *gin.Context) {
 // Verify Email
 // @Summary VerifyEmail
 // @Description VerifyEmail
-// @Tags auth/verify-email
+// @Tags auth
 // @Accept json
 // @Produce json
 // @Param verificationCode path string true "Verification Code"
@@ -350,7 +350,7 @@ func (ac *AuthController) VerifyEmail(ctx *gin.Context) {
 // ForgotPassword => Forgot Password
 // @Summary ForgotPassword
 // @Description ForgotPassword
-// @Tags auth/forgot-password
+// @Tags auth
 // @Accept json
 // @Produce json
 // @Param ForgotPasswordInput body models.ForgotPasswordInput true "ForgotPasswordInput"
@@ -420,7 +420,7 @@ func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 // ResetPassword => Reset Password
 // @Summary ResetPassword
 // @Description ResetPassword
-// @Tags auth/reset-password
+// @Tags auth
 // @Accept json
 // @Produce json
 // @Param resetToken path string true "Reset Token"
