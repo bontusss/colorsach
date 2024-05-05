@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"os"
 
+	_ "github.com/bontusss/colosach/docs"
 	"github.com/bontusss/colosach/controllers"
 	"github.com/bontusss/colosach/routes"
 	"github.com/bontusss/colosach/services"
@@ -24,6 +25,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var (
@@ -125,15 +128,18 @@ func init() {
 	server = gin.Default()
 }
 
+// @title Colosach API
+// @version 1.0
+// @description This is the API for Colosach
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.email ikwecheghu@gmail.com
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8000
+// @BasePath /api
 func main() {
-	// serve static file
-	fs := http.FileServer(http.Dir("templates/assets"))
-	http.Handle("/static/", http.StripPrefix("/assets/", fs))
-	
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading app.env file")
-	}
+
 	defer func(mongoclient *mongo.Client, ctx context.Context) {
 		err := mongoclient.Disconnect(ctx)
 		if err != nil {
@@ -157,6 +163,8 @@ func main() {
 	server.Use(cors.New(corsConfig))
 
 	router := server.Group("/api")
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	
 	router.GET("/health-checker", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "alive"})
 	})

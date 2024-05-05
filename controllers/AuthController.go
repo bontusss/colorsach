@@ -56,6 +56,16 @@ func NewAuthController(authService services.AuthService, userService services.Us
 //	  "status": "success",
 //	  "message": "We sent an email with a verification code to newuser@example.com"
 //	}
+// @Summary SignUpUser
+// @Description SignUpUser
+// @Tags auth/register
+// @Accept json
+// @Produce json
+// @Param SignUpInput body models.SignUpInput true "SignUpInput"
+// @Success 200
+// @Failure 400
+// @Failure 500
+// @Router /api/auth/register [post]
 func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	var user *models.SignUpInput
 
@@ -141,7 +151,6 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	}
 
 }
-
 // SignInUser is a function to handle user sign in
 // It takes a gin context as a parameter
 // Example of how to use the function
@@ -152,6 +161,16 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 //		router.POST("/signup", authController.SignUpUser)
 //		router.Run(":8080")
 //	}
+// @Summary SignInUser
+// @Description SignInUser
+// @Tags auth/login
+// @Accept  json
+// @Produce  json
+// @Param user body models.SignInInput true "SignInInput"
+// @Success 200
+// @Failure 400
+// @Failure 500
+// @Router /api/auth/login [post]
 func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	var credentials *models.SignInInput
 
@@ -225,6 +244,15 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": accessToken})
 }
 
+// @Summary RefreshAccessToken
+// @Description RefreshAccessToken
+// @Tags auth/refresh
+// @Accept json
+// @Produce json
+// @Success 200
+// @Failure 400
+// @Failure 500
+// @Router /api/auth/refresh [get]
 func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 	message := "could not refresh access token"
 
@@ -270,6 +298,14 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": accessToken})
 }
 
+// @Summary LogoutUser
+// @Description LogoutUser
+// @Tags auth/logout
+// @Accept json
+// @Produce json
+// @Success 200
+// @Failure 401
+// @Router /api/auth/logout [get]
 func (ac *AuthController) LogoutUser(ctx *gin.Context) {
 	ctx.SetCookie("access_token", "", -1, "/", "localhost", false, true)
 	ctx.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)
@@ -279,7 +315,15 @@ func (ac *AuthController) LogoutUser(ctx *gin.Context) {
 }
 
 // Verify Email
-
+// @Summary VerifyEmail
+// @Description VerifyEmail
+// @Tags auth/verify-email
+// @Accept json
+// @Produce json
+// @Param verificationCode path string true "Verification Code"
+// @Success 200
+// @Failure 403
+// @Router /api/auth/verify-email/{verificationCode} [get]
 func (ac *AuthController) VerifyEmail(ctx *gin.Context) {
 	verificationCode := ctx.Params.ByName("verificationCode")
 	//verificationCode := utils.Encode(code)
@@ -304,6 +348,17 @@ func (ac *AuthController) VerifyEmail(ctx *gin.Context) {
 }
 
 // ForgotPassword => Forgot Password
+// @Summary ForgotPassword
+// @Description ForgotPassword
+// @Tags auth/forgot-password
+// @Accept json
+// @Produce json
+// @Param ForgotPasswordInput body models.ForgotPasswordInput true "ForgotPasswordInput"
+// @Success 200
+// @Failure 401
+// @Failure 403
+// @Failure 502
+// @Router /api/auth/forgot-password [post]
 func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 	var userCredential *models.ForgotPasswordInput
 
@@ -362,6 +417,19 @@ func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
 }
 
+// ResetPassword => Reset Password
+// @Summary ResetPassword
+// @Description ResetPassword
+// @Tags auth/reset-password
+// @Accept json
+// @Produce json
+// @Param resetToken path string true "Reset Token"
+// @Param ResetPasswordInput body models.ResetPasswordInput true "ResetPasswordInput"
+// @Success 200
+// @Failure 400
+// @Failure 403
+// @Failure 500
+// @Router /api/auth/reset-password/{resetToken} [post]
 func (ac *AuthController) ResetPassword(ctx *gin.Context) {
 	passwordResetToken := ctx.Params.ByName("resetToken")
 	var userCredential *models.ResetPasswordInput
