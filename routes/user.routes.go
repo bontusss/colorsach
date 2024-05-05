@@ -17,10 +17,12 @@ func NewRouteUserController(userController controllers.UserController) UserRoute
 
 func (uc *UserRouteController) UserRoute(rg *gin.RouterGroup, userService services.UserService) {
 
-	router := rg.Group("users")
+	router := rg.Group("user")
 	router.Use(middleware.DeserializeUser(userService))
 	// Get current user details
 	router.GET("/me", uc.userController.GetMe)
 	// make a user an admin
-	router.PATCH("/make-admin/:user-id", uc.userController.MakeAdminUser)
+	router.PATCH("/make-admin", uc.userController.MakeAdminUser)
+	// update a user
+	router.POST("/update-me/:id", uc.userController.UpdateUser)
 }

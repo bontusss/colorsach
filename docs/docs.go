@@ -33,7 +33,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth/forgot-password"
+                    "auth"
                 ],
                 "summary": "ForgotPassword",
                 "parameters": [
@@ -73,7 +73,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth/login"
+                    "auth"
                 ],
                 "summary": "SignInUser",
                 "parameters": [
@@ -110,7 +110,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth/logout"
+                    "auth"
                 ],
                 "summary": "LogoutUser",
                 "responses": {
@@ -133,7 +133,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth/refresh"
+                    "auth"
                 ],
                 "summary": "RefreshAccessToken",
                 "responses": {
@@ -151,7 +151,7 @@ const docTemplate = `{
         },
         "/api/auth/register": {
             "post": {
-                "description": "SignUpUser",
+                "description": "Register a user",
                 "consumes": [
                     "application/json"
                 ],
@@ -159,9 +159,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth/register"
+                    "auth"
                 ],
-                "summary": "SignUpUser",
+                "summary": "Register User",
                 "parameters": [
                     {
                         "description": "SignUpInput",
@@ -196,7 +196,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth/reset-password"
+                    "auth"
                 ],
                 "summary": "ResetPassword",
                 "parameters": [
@@ -243,7 +243,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth/verify-email"
+                    "auth"
                 ],
                 "summary": "VerifyEmail",
                 "parameters": [
@@ -306,9 +306,131 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/users/make-admin": {
+            "patch": {
+                "description": "Make a user an admin",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Make Admin",
+                "parameters": [
+                    {
+                        "description": "data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.data"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/users/me": {
+            "get": {
+                "description": "Get the details of a logged in user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get Current User",
+                "parameters": [
+                    {
+                        "description": "DBResponse",
+                        "name": "DBResponse",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DBResponse"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/users/update-me/:id": {
+            "post": {
+                "description": "Users update their profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user profile",
+                "parameters": [
+                    {
+                        "description": "UserResponse",
+                        "name": "UserResponse",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserResponse"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "controllers.data": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "models.DBLibrary": {
             "type": "object",
             "required": [
@@ -322,11 +444,20 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "featured": {
+                    "type": "boolean"
+                },
                 "id": {
                     "type": "string"
                 },
-                "image": {
-                    "type": "string"
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ImageResponse"
+                    }
+                },
+                "likes": {
+                    "type": "integer"
                 },
                 "owner": {
                     "$ref": "#/definitions/models.UserResponse"
@@ -339,6 +470,68 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "views": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.DBResponse": {
+            "type": "object",
+            "properties": {
+                "Followers": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "following": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ImageResponse"
+                    }
+                },
+                "is_first_login": {
+                    "type": "boolean"
+                },
+                "libraries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DBLibrary"
+                    }
+                },
+                "password": {
+                    "type": "string"
+                },
+                "resetPasswordAt": {
+                    "type": "string"
+                },
+                "resetPasswordToken": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/models.UserRole"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "verificationCode": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
                 }
             }
         },
@@ -414,32 +607,14 @@ const docTemplate = `{
                 "username"
             ],
             "properties": {
-                "Followers": {
-                    "type": "integer"
-                },
                 "created_at": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
                 },
-                "following": {
-                    "type": "integer"
-                },
-                "images": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ImageResponse"
-                    }
-                },
                 "is_first_login": {
                     "type": "boolean"
-                },
-                "libraries": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.DBLibrary"
-                    }
                 },
                 "password": {
                     "type": "string",
@@ -479,14 +654,32 @@ const docTemplate = `{
         "models.UserResponse": {
             "type": "object",
             "properties": {
+                "Followers": {
+                    "type": "integer"
+                },
                 "created_at": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
                 },
+                "following": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ImageResponse"
+                    }
+                },
+                "libraries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DBLibrary"
+                    }
                 },
                 "role": {
                     "type": "string"

@@ -1,15 +1,26 @@
 basePath: /api
 definitions:
+  controllers.data:
+    properties:
+      email:
+        type: string
+    type: object
   models.DBLibrary:
     properties:
       created_at:
         type: string
       description:
         type: string
+      featured:
+        type: boolean
       id:
         type: string
-      image:
-        type: string
+      images:
+        items:
+          $ref: '#/definitions/models.ImageResponse'
+        type: array
+      likes:
+        type: integer
       owner:
         $ref: '#/definitions/models.UserResponse'
       public:
@@ -18,9 +29,50 @@ definitions:
         type: string
       updatedAt:
         type: string
+      views:
+        type: integer
     required:
     - description
     - title
+    type: object
+  models.DBResponse:
+    properties:
+      Followers:
+        type: integer
+      created_at:
+        type: string
+      email:
+        type: string
+      following:
+        type: integer
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/models.ImageResponse'
+        type: array
+      is_first_login:
+        type: boolean
+      libraries:
+        items:
+          $ref: '#/definitions/models.DBLibrary'
+        type: array
+      password:
+        type: string
+      resetPasswordAt:
+        type: string
+      resetPasswordToken:
+        type: string
+      role:
+        $ref: '#/definitions/models.UserRole'
+      updated_at:
+        type: string
+      username:
+        type: string
+      verificationCode:
+        type: string
+      verified:
+        type: boolean
     type: object
   models.ForgotPasswordInput:
     properties:
@@ -65,24 +117,12 @@ definitions:
     type: object
   models.SignUpInput:
     properties:
-      Followers:
-        type: integer
       created_at:
         type: string
       email:
         type: string
-      following:
-        type: integer
-      images:
-        items:
-          $ref: '#/definitions/models.ImageResponse'
-        type: array
       is_first_login:
         type: boolean
-      libraries:
-        items:
-          $ref: '#/definitions/models.DBLibrary'
-        type: array
       password:
         minLength: 8
         type: string
@@ -112,12 +152,24 @@ definitions:
     type: object
   models.UserResponse:
     properties:
+      Followers:
+        type: integer
       created_at:
         type: string
       email:
         type: string
+      following:
+        type: integer
       id:
         type: string
+      images:
+        items:
+          $ref: '#/definitions/models.ImageResponse'
+        type: array
+      libraries:
+        items:
+          $ref: '#/definitions/models.DBLibrary'
+        type: array
       role:
         type: string
       updated_at:
@@ -260,7 +312,7 @@ paths:
           description: Bad Gateway
       summary: ForgotPassword
       tags:
-      - auth/forgot-password
+      - auth
   /api/auth/login:
     post:
       consumes:
@@ -284,7 +336,7 @@ paths:
           description: Internal Server Error
       summary: SignInUser
       tags:
-      - auth/login
+      - auth
   /api/auth/logout:
     get:
       consumes:
@@ -299,7 +351,7 @@ paths:
           description: Unauthorized
       summary: LogoutUser
       tags:
-      - auth/logout
+      - auth
   /api/auth/refresh:
     get:
       consumes:
@@ -316,12 +368,12 @@ paths:
           description: Internal Server Error
       summary: RefreshAccessToken
       tags:
-      - auth/refresh
+      - auth
   /api/auth/register:
     post:
       consumes:
       - application/json
-      description: SignUpUser
+      description: Register a user
       parameters:
       - description: SignUpInput
         in: body
@@ -338,9 +390,9 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-      summary: SignUpUser
+      summary: Register User
       tags:
-      - auth/register
+      - auth
   /api/auth/reset-password/{resetToken}:
     post:
       consumes:
@@ -371,7 +423,7 @@ paths:
           description: Internal Server Error
       summary: ResetPassword
       tags:
-      - auth/reset-password
+      - auth
   /api/auth/verify-email/{verificationCode}:
     get:
       consumes:
@@ -392,7 +444,7 @@ paths:
           description: Forbidden
       summary: VerifyEmail
       tags:
-      - auth/verify-email
+      - auth
   /api/search:
     post:
       consumes:
@@ -421,4 +473,78 @@ paths:
       summary: Search Pexel photos
       tags:
       - search
+  /api/users/make-admin:
+    patch:
+      consumes:
+      - application/json
+      description: Make a user an admin
+      parameters:
+      - description: data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.data'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+      summary: Make Admin
+      tags:
+      - User
+  /api/users/me:
+    get:
+      consumes:
+      - application/json
+      description: Get the details of a logged in user
+      parameters:
+      - description: DBResponse
+        in: body
+        name: DBResponse
+        required: true
+        schema:
+          $ref: '#/definitions/models.DBResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+      summary: Get Current User
+      tags:
+      - User
+  /api/users/update-me/:id:
+    post:
+      consumes:
+      - application/json
+      description: Users update their profile
+      parameters:
+      - description: UserResponse
+        in: body
+        name: UserResponse
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: Update user profile
+      tags:
+      - User
 swagger: "2.0"
