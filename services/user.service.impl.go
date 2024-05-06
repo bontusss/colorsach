@@ -43,7 +43,7 @@ func (uc *UserServiceImpl) FindUserById(id string) (*models.DBResponse, error) {
 func (uc *UserServiceImpl) UpdateUserById(id string, data *models.UpdateInput) (models.UserResponse, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return models.UserResponse{}, fmt.Errorf("invalid ID format: %v", err)
+		return models.UserResponse{}, fmt.Errorf("invalid user id: %v", err)
 	}
 
 	filter := bson.D{{Key: "_id", Value: oid}}

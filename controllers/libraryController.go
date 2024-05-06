@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/bontusss/colosach/models"
 	"github.com/bontusss/colosach/services"
@@ -22,23 +22,19 @@ func NewLibraryController(libService services.LibraryService) LibraryController 
 func (l *LibraryController) CreateLibrary(c *gin.Context) {
 	lib := &models.CreateLibraryRequest{}
 	// check if user is logged in
-	// currentUser := c.MustGet("currentUser").(*models.DBResponse)
 	currentUser := utils.GetCurrentUser(c)
-	libOwner := models.FilteredResponse(currentUser)
-	lib.Owner = &libOwner
+	lib.OwnerID = currentUser.ID.Hex()
 
 	if err := c.ShouldBindJSON(&lib); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "an error occurred, try again."})
+		fmt.Println("creating library error: ", err)
 		return
 	}
 
 	newLib, err := l.LibraryService.CreateLibrary(lib)
 	if err != nil {
-		if strings.Contains(err.Error(), "title already exists") {
-			c.JSON(http.StatusConflict, gin.H{"status": "fail", "message": err.Error()})
-			return
-		}
-		c.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		c.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": "error creating library."})
+		fmt.Println("error creating library: ", err)
 		return
 	}
 
