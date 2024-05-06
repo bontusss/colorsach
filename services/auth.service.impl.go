@@ -28,6 +28,7 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	user.Email = strings.ToLower(user.Email)
 	user.Role = models.UserRoleUser
 	user.IsFirstLogin = true
+	user.Status = models.UserStatusActive
 
 	// fmt.Println("just before signing", user.Password, user.PasswordConfirm, user.Username)
 	hashedPassword, _ := utils.HashPassword(user.Password)
