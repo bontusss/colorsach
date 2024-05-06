@@ -56,6 +56,7 @@ func NewAuthController(authService services.AuthService, userService services.Us
 //	  "status": "success",
 //	  "message": "We sent an email with a verification code to newuser@example.com"
 //	}
+//
 // @Summary Register User
 // @Description Register a user
 // @Tags auth
@@ -147,10 +148,45 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": message})
 
 	} else {
-		ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": "Registered successfully"})
+		// Generate Tokens
+		tokenDuration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXPIRED_IN"))
+		if err != nil {
+			log.Fatal("Error parsing duration", err)
+		}
+		accessToken, err := utils.CreateToken(tokenDuration, user.Email, os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+			return
+		}
+
+		refreshDuration, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_EXPIRED_IN"))
+		if err != nil {
+			log.Fatal("Error parsing duration", err)
+		}
+		refreshToken, err := utils.CreateToken(refreshDuration, user.Email, os.Getenv("REFRESH_TOKEN_PRIVATE_KEY"))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+			return
+		}
+
+		atma, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_MAXAGE"))
+		if err != nil {
+			log.Fatal("Error: ", err)
+		}
+
+		rtma, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
+		if err != nil {
+			log.Fatal("Error: ", err)
+		}
+		ctx.SetCookie("access_token", accessToken, atma*60, "/", "localhost", false, true)
+		ctx.SetCookie("refresh_token", refreshToken, rtma*60, "/", "localhost", false, true)
+		ctx.SetCookie("logged_in", "true", atma*60, "/", "localhost", false, false)
+
+		ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": accessToken})
 	}
 
 }
+
 // SignInUser is a function to handle user sign in
 // It takes a gin context as a parameter
 // Example of how to use the function
@@ -161,6 +197,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 //		router.POST("/signup", authController.SignUpUser)
 //		router.Run(":8080")
 //	}
+//
 // @Summary SignInUser
 // @Description SignInUser
 // @Tags auth
@@ -197,7 +234,6 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User email is not verified."})
 		log.Fatal("user email is not verified")
 	}
-
 
 	fmt.Println(user.Password)
 	fmt.Println(credentials.Password)
