@@ -11,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type AuthServiceImpl struct {
@@ -26,6 +28,8 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = user.CreatedAt
 	user.Email = strings.ToLower(user.Email)
+	caser := cases.Title(language.English)
+	user.Username = caser.String(user.Username)
 	user.Role = models.UserRoleUser
 	user.IsFirstLogin = true
 	user.Status = models.UserStatusActive

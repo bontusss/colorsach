@@ -19,6 +19,17 @@ func NewLibraryController(libService services.LibraryService) LibraryController 
 	return LibraryController{libService}
 }
 
+
+// @Summary Create library
+// @Description Create a library
+// @Tags Library
+// @Accept json
+// @Produce json
+// @Param DBLibrary body models.DBLibrary true "DBLibrary"
+// @Success 201
+// @Failure 500
+// @Failure 400
+// @Router /api/libs [post]
 func (l *LibraryController) CreateLibrary(c *gin.Context) {
 	lib := &models.CreateLibraryRequest{}
 	// check if user is logged in
@@ -33,7 +44,7 @@ func (l *LibraryController) CreateLibrary(c *gin.Context) {
 
 	newLib, err := l.LibraryService.CreateLibrary(lib)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": "error creating library."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
 		fmt.Println("error creating library: ", err)
 		return
 	}

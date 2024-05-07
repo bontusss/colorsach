@@ -91,21 +91,26 @@ func (ls *LibraryServiceImpl) CreateLibrary(lib *models.CreateLibraryRequest) (*
 	lib.Visibility = models.IsPublic // visibility defaults to public if not set
 	lib.Featured = false
 
-	res, err := ls.collection.InsertOne(ls.ctx, lib)
-	if err != nil {
-		if er, ok := err.(mongo.WriteException); ok && er.WriteErrors[0].Code == 11000 {
-			return nil, errors.New("library with that title already exists")
-		}
-		return nil, err
-	}
-
 	opt := options.Index()
 	opt.SetUnique(true)
 
-	index := mongo.IndexModel{Keys: bson.M{"title": 1}, Options: opt}
+	index := mongo.IndexModel{Keys: bson.D{{Key: "name", Value: 1}, {Key: "owner_id", Value: 1}}, Options: opt}
 	if _, err := ls.collection.Indexes().CreateOne(ls.ctx, index); err != nil {
-		return nil, errors.New("could not create index for title")
+		return nil, fmt.Errorf("could not create index for name: %v", err)
 	}
+
+	res, err := ls.collection.InsertOne(ls.ctx, lib)
+	if err != nil {
+		if mongoErr, ok := err.(mongo.WriteException); ok {
+			for _, we := range mongoErr.WriteErrors {
+				if we.Code == 11000 { // Duplicate key error code
+					return nil, fmt.Errorf("you already have a library with that name")
+				}
+			}
+		}
+		return nil, fmt.Errorf("error inserting new library: %v", err)
+	}
+
 
 	var newLibrary *models.DBLibrary
 	query := bson.M{"_id": res.InsertedID}

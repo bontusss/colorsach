@@ -56,6 +56,8 @@ type DBResponse struct {
 	ResetPasswordAt    time.Time          `json:"resetPasswordAt,omitempty" bson:"resetPasswordAt,omitempty"`
 	Verified           bool               `json:"verified" bson:"verified"`
 	IsFirstLogin       bool               `json:"is_first_login" bson:"is_first_login"`
+	City               string             `json:"city" bson:"city"`
+	Country            string             `json:"country" bson:"country"`
 	Followers          int                `json:"followers" bson:"followers"`
 	Following          int                `json:"following" bson:"following"`
 	Images             *[]ImageResponse   `json:"images" bson:"images"`
@@ -69,6 +71,8 @@ type UpdateInput struct {
 	Email        string    `json:"email,omitempty" bson:"email,omitempty"`
 	Password     string    `json:"password,omitempty" bson:"password,omitempty"`
 	Role         UserRole  `json:"role,omitempty" bson:"role,omitempty"`
+	City         string    `json:"city" bson:"city"`
+	Country      string    `json:"country" bson:"country"`
 	ProfileImage string    `json:"profile_image,omitempty" bson:"profile_image,omitempty"`
 	UpdatedAt    time.Time `json:"updated_at" bson:"updated_at"`
 }
@@ -79,9 +83,11 @@ type UserResponse struct {
 	Username  string             `json:"username,omitempty" bson:"username,omitempty"`
 	Email     string             `json:"email,omitempty" bson:"email,omitempty"`
 	Role      string             `json:"role,omitempty" bson:"role,omitempty"`
-	Status    string         `json:"status" bson:"status"`
+	Status    string             `json:"status" bson:"status"`
 	Followers int                `json:"Followers" bson:"followers"`
 	Following int                `json:"following" bson:"following"`
+	City      string             `json:"city" bson:"city"`
+	Country   string             `json:"country" bson:"country"`
 	Images    *[]ImageResponse   `json:"images" bson:"images"`
 	Library   *[]DBLibrary       `json:"libraries" bson:"libraries"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
@@ -112,5 +118,7 @@ func FilteredResponse(user *DBResponse) UserResponse {
 		Following: user.Following,
 		Images:    user.Images,
 		Library:   user.Library,
+		Country:   user.Country,
+		City:      user.City,
 	}
 }

@@ -17,32 +17,36 @@ definitions:
         type: string
       images:
         items:
-          $ref: '#/definitions/models.ImageResponse'
+          type: string
         type: array
       likes:
         type: integer
-      owner:
-        $ref: '#/definitions/models.UserResponse'
-      public:
-        type: boolean
-      title:
+      name:
+        type: string
+      owner_id:
         type: string
       updatedAt:
         type: string
       views:
         type: integer
+      visibility:
+        $ref: '#/definitions/models.Visibility'
     required:
     - description
-    - title
+    - name
     type: object
   models.DBResponse:
     properties:
-      Followers:
-        type: integer
+      city:
+        type: string
+      country:
+        type: string
       created_at:
         type: string
       email:
         type: string
+      followers:
+        type: integer
       following:
         type: integer
       id:
@@ -65,6 +69,8 @@ definitions:
         type: string
       role:
         $ref: '#/definitions/models.UserRole'
+      status:
+        $ref: '#/definitions/models.UserStatus'
       updated_at:
         type: string
       username:
@@ -133,9 +139,9 @@ definitions:
       resetPasswordToken:
         type: string
       role:
-        allOf:
-        - $ref: '#/definitions/models.UserRole'
-        description: RawPassword        string           `json:"raw_password"`
+        $ref: '#/definitions/models.UserRole'
+      status:
+        $ref: '#/definitions/models.UserStatus'
       updated_at:
         type: string
       username:
@@ -154,6 +160,10 @@ definitions:
     properties:
       Followers:
         type: integer
+      city:
+        type: string
+      country:
+        type: string
       created_at:
         type: string
       email:
@@ -172,6 +182,8 @@ definitions:
         type: array
       role:
         type: string
+      status:
+        type: string
       updated_at:
         type: string
       username:
@@ -187,6 +199,22 @@ definitions:
     - UserRoleUser
     - UserRoleAdmin
     - UserRoleSuperAdmin
+  models.UserStatus:
+    enum:
+    - active
+    - suspended
+    type: string
+    x-enum-varnames:
+    - UserStatusActive
+    - UserStatusSuspended
+  models.Visibility:
+    enum:
+    - public
+    - private
+    type: string
+    x-enum-varnames:
+    - IsPublic
+    - IsPrivate
   services.Photo:
     properties:
       alt:
@@ -445,6 +473,30 @@ paths:
       summary: VerifyEmail
       tags:
       - auth
+  /api/libs:
+    post:
+      consumes:
+      - application/json
+      description: Create a library
+      parameters:
+      - description: DBLibrary
+        in: body
+        name: DBLibrary
+        required: true
+        schema:
+          $ref: '#/definitions/models.DBLibrary'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Create library
+      tags:
+      - Library
   /api/search:
     post:
       consumes:

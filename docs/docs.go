@@ -265,6 +265,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/libs": {
+            "post": {
+                "description": "Create a library",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Library"
+                ],
+                "summary": "Create library",
+                "parameters": [
+                    {
+                        "description": "DBLibrary",
+                        "name": "DBLibrary",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DBLibrary"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/api/search": {
             "post": {
                 "description": "Requires a color and query and returns a list of photos",
@@ -435,7 +472,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "description",
-                "title"
+                "name"
             ],
             "properties": {
                 "created_at": {
@@ -453,19 +490,16 @@ const docTemplate = `{
                 "images": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ImageResponse"
+                        "type": "string"
                     }
                 },
                 "likes": {
                     "type": "integer"
                 },
-                "owner": {
-                    "$ref": "#/definitions/models.UserResponse"
+                "name": {
+                    "type": "string"
                 },
-                "public": {
-                    "type": "boolean"
-                },
-                "title": {
+                "owner_id": {
                     "type": "string"
                 },
                 "updatedAt": {
@@ -473,20 +507,29 @@ const docTemplate = `{
                 },
                 "views": {
                     "type": "integer"
+                },
+                "visibility": {
+                    "$ref": "#/definitions/models.Visibility"
                 }
             }
         },
         "models.DBResponse": {
             "type": "object",
             "properties": {
-                "Followers": {
-                    "type": "integer"
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
                 },
                 "created_at": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
+                },
+                "followers": {
+                    "type": "integer"
                 },
                 "following": {
                     "type": "integer"
@@ -520,6 +563,9 @@ const docTemplate = `{
                 },
                 "role": {
                     "$ref": "#/definitions/models.UserRole"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.UserStatus"
                 },
                 "updated_at": {
                     "type": "string"
@@ -630,12 +676,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
-                    "description": "RawPassword        string           ` + "`" + `json:\"raw_password\"` + "`" + `",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.UserRole"
-                        }
-                    ]
+                    "$ref": "#/definitions/models.UserRole"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.UserStatus"
                 },
                 "updated_at": {
                     "type": "string"
@@ -656,6 +700,12 @@ const docTemplate = `{
             "properties": {
                 "Followers": {
                     "type": "integer"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
                 },
                 "created_at": {
                     "type": "string"
@@ -684,6 +734,9 @@ const docTemplate = `{
                 "role": {
                     "type": "string"
                 },
+                "status": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 },
@@ -703,6 +756,28 @@ const docTemplate = `{
                 "UserRoleUser",
                 "UserRoleAdmin",
                 "UserRoleSuperAdmin"
+            ]
+        },
+        "models.UserStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "suspended"
+            ],
+            "x-enum-varnames": [
+                "UserStatusActive",
+                "UserStatusSuspended"
+            ]
+        },
+        "models.Visibility": {
+            "type": "string",
+            "enum": [
+                "public",
+                "private"
+            ],
+            "x-enum-varnames": [
+                "IsPublic",
+                "IsPrivate"
             ]
         },
         "services.Photo": {

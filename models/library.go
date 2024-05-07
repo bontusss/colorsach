@@ -14,7 +14,7 @@ const (
 )
 
 type CreateLibraryRequest struct {
-	Name        string     `json:"title" bson:"title" binding:"required"`
+	Name        string     `json:"name" bson:"name" binding:"required"`
 	Description string     `json:"description" bson:"description" binding:"required"`
 	OwnerID     string     `json:"owner_id" bson:"owner_id"`
 	ImageIDs    []string   `json:"images,omitempty" bson:"images,omitempty"`
@@ -28,7 +28,7 @@ type CreateLibraryRequest struct {
 
 type DBLibrary struct {
 	Id          primitive.ObjectID `json:"id" bson:"_id"`
-	Name        string             `json:"title" bson:"title" binding:"required"`
+	Name        string             `json:"name" bson:"name" binding:"required"`
 	Description string             `json:"description" bson:"description" binding:"required"`
 	OwnerID     string             `json:"owner_id" bson:"owner_id"`
 	ImageIDs    []string           `json:"images,omitempty" bson:"images,omitempty"`
@@ -41,7 +41,7 @@ type DBLibrary struct {
 }
 
 type UpdateLibrary struct {
-	Name        string     `json:"title" bson:"title" binding:"required"`
+	Name        string     `json:"name" bson:"name" binding:"required"`
 	Description string     `json:"description" bson:"description" binding:"required"`
 	ImageIDs    []string   `json:"images,omitempty" bson:"images,omitempty"`
 	Visibility  Visibility `json:"visibility" bson:"visibility"`

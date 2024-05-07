@@ -115,6 +115,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		if err != nil {
 			// is it necessary to stop process because of this?
 			log.Println("error getting image for email template")
+			return
 		}
 
 		//send  email verification mail
