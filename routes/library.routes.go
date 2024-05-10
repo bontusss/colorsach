@@ -19,4 +19,5 @@ func (l *LibraryRouteController) LibraryRoute(rg *gin.RouterGroup, userService s
 	router := rg.Group("libs")
 	router.Use(middleware.DeserializeUser(userService))
 	router.POST("/", l.libController.CreateLibrary)
+	router.GET("/", l.libController.FindLibraries)
 }

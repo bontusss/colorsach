@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/bontusss/colosach/models"
 	"github.com/bontusss/colosach/services"
@@ -50,4 +51,17 @@ func (l *LibraryController) CreateLibrary(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": newLib})
+}
+
+func (l *LibraryController) FindLibraries(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "0"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	libraries, err := l.LibraryService.FindLibraries(page, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": libraries})
 }

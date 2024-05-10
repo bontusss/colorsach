@@ -3,8 +3,15 @@ package utils
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
 	"time"
+
+	"github.com/bontusss/colosach/models"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // CreateToken is a function that generates a JWT token with the given time to live, payload, and private key.
@@ -69,4 +76,41 @@ func ValidateToken(token string, publicKey string) (interface{}, error) {
 	}
 
 	return claims["sub"], nil
+}
+
+func SetToken(user *models.DBResponse, ctx *gin.Context) {
+	tokenDuration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXPIRED_IN"))
+	if err != nil {
+		log.Fatal("Error parsing duration", err)
+	}
+	accessToken, err := CreateToken(tokenDuration, user.ID, os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	refreshDuration, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_EXPIRED_IN"))
+	if err != nil {
+		log.Fatal("Error parsing duration", err)
+	}
+	refreshToken, err := CreateToken(refreshDuration, user.ID, os.Getenv("REFRESH_TOKEN_PRIVATE_KEY"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	atma, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_MAXAGE"))
+	if err != nil {
+		log.Fatal("Error: ", err)
+	}
+
+	rtma, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
+	if err != nil {
+		log.Fatal("Error: ", err)
+	}
+	ctx.SetCookie("access_token", accessToken, atma*60, "/", "localhost", false, true)
+	ctx.SetCookie("refresh_token", refreshToken, rtma*60, "/", "localhost", false, true)
+	ctx.SetCookie("logged_in", "true", atma*60, "/", "localhost", false, false)
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": accessToken})
 }

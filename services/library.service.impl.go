@@ -75,9 +75,29 @@ func (ls *LibraryServiceImpl) FindLibraryByID(id string) (*models.DBLibrary, err
 	return library, nil
 }
 
-func (ls *LibraryServiceImpl) FindLibraries(page int, limit int) ([]*models.DBLibrary, error) {
-	//TODO implement me
-	panic("implement me")
+func (ls *LibraryServiceImpl) FindLibraries(page, limit int) ([]*models.DBLibrary, error) {
+	if limit <= 0 {
+		return nil, errors.New("limit must be greater than 0")
+	}
+	if page < 0 {
+		return nil, errors.New("page must be non-negative")
+	}
+
+	skip := page * limit
+	findOptions := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit))
+
+	cursor, err := ls.collection.Find(ls.ctx, bson.D{}, findOptions)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching libraries: %v", err)
+	}
+	defer cursor.Close(ls.ctx)
+
+	var libraries []*models.DBLibrary
+	if err = cursor.All(ls.ctx, &libraries); err != nil {
+		return nil, fmt.Errorf("error decoding library data: %v", err)
+	}
+
+	return libraries, nil
 }
 
 func (ls *LibraryServiceImpl) DeleteLibrary(s string) error {

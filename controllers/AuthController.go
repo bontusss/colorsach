@@ -97,7 +97,6 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 			// log.Fatal(err)
 		}
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
-
 		return
 	}
 
@@ -150,40 +149,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	} else {
 		// Generate Tokens
-		tokenDuration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXPIRED_IN"))
-		if err != nil {
-			log.Fatal("Error parsing duration", err)
-		}
-		accessToken, err := utils.CreateToken(tokenDuration, user.Email, os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-			return
-		}
-
-		refreshDuration, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_EXPIRED_IN"))
-		if err != nil {
-			log.Fatal("Error parsing duration", err)
-		}
-		refreshToken, err := utils.CreateToken(refreshDuration, user.Email, os.Getenv("REFRESH_TOKEN_PRIVATE_KEY"))
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-			return
-		}
-
-		atma, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_MAXAGE"))
-		if err != nil {
-			log.Fatal("Error: ", err)
-		}
-
-		rtma, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
-		if err != nil {
-			log.Fatal("Error: ", err)
-		}
-		ctx.SetCookie("access_token", accessToken, atma*60, "/", "localhost", false, true)
-		ctx.SetCookie("refresh_token", refreshToken, rtma*60, "/", "localhost", false, true)
-		ctx.SetCookie("logged_in", "true", atma*60, "/", "localhost", false, false)
-
-		ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": accessToken})
+		utils.SetToken(newUser, ctx)
 	}
 
 }
@@ -216,18 +182,25 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		log.Fatal(err)
 	}
-
-	fmt.Println("logging in with: ", credentials.Email, credentials.Password)
+	// fmt.Println("logging in with: ", credentials.Email, credentials.Password)
 
 	user, err := ac.userService.FindUserByEmail(credentials.Email)
-
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
-			// log.Fatal(err)
+			log.Fatal("error logging in: ", err)
+			return
 		}
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
-		// log.Fatal(err)
+		log.Fatal("error logging in: ", err)
+		return
+	}
+
+	// check if user is signing in with "Signin with email" and set token
+	if credentials.FromGoogle {
+		credentials.Password = utils.GeneratePassword(10)
+		utils.SetToken(user, ctx)
+		return
 	}
 
 	// check if user email is verified
@@ -236,50 +209,21 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		log.Fatal("user email is not verified")
 	}
 
-	fmt.Println(user.Password)
-	fmt.Println(credentials.Password)
-	// hashedPassword, _ := utils.HashPassword(credentials.Password)
+	if credentials.Password == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Password must be provided"})
+		return
+	}
+
 	if err := utils.VerifyPassword(user.Password, credentials.Password); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Passwordd"})
 		return
 	}
 
-	// Generate Tokens
-	tokenDuration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXPIRED_IN"))
-	if err != nil {
-		log.Fatal("Error parsing duration", err)
-	}
-	accessToken, err := utils.CreateToken(tokenDuration, user.ID, os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-		return
-	}
-
-	refreshDuration, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_EXPIRED_IN"))
-	if err != nil {
-		log.Fatal("Error parsing duration", err)
-	}
-	refreshToken, err := utils.CreateToken(refreshDuration, user.ID, os.Getenv("REFRESH_TOKEN_PRIVATE_KEY"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-		return
-	}
-
-	atma, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_MAXAGE"))
-	if err != nil {
-		log.Fatal("Error: ", err)
-	}
-
-	rtma, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
-	if err != nil {
-		log.Fatal("Error: ", err)
-	}
-	ctx.SetCookie("access_token", accessToken, atma*60, "/", "localhost", false, true)
-	ctx.SetCookie("refresh_token", refreshToken, rtma*60, "/", "localhost", false, true)
-	ctx.SetCookie("logged_in", "true", atma*60, "/", "localhost", false, false)
-
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": accessToken})
+	// Set Tokens
+	utils.SetToken(user, ctx)
 }
+
+
 
 // @Summary RefreshAccessToken
 // @Description RefreshAccessToken

@@ -40,7 +40,8 @@ type SignUpInput struct {
 // SignInInput 👈 SignInInput struct
 type SignInInput struct {
 	Email    string `json:"email" bson:"email" binding:"required"`
-	Password string `json:"password" bson:"password" binding:"required"`
+	Password string `json:"password" bson:"password"`
+	FromGoogle bool `json:"from_google"`
 }
 
 // DBResponse 👈 DBResponse struct
