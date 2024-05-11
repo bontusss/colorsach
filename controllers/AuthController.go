@@ -206,7 +206,8 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	// check if user email is verified
 	if !user.Verified {
 		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User email is not verified."})
-		log.Fatal("user email is not verified")
+		log.Println("user email is not verified")
+		return
 	}
 
 	if credentials.Password == "" {
