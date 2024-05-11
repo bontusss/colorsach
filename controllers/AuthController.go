@@ -188,11 +188,11 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
-			log.Fatal("error logging in: ", err)
+			log.Println("error logging in: ", err)
 			return
 		}
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
-		log.Fatal("error logging in: ", err)
+		log.Println("error logging in: ", err)
 		return
 	}
 

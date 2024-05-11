@@ -31,7 +31,7 @@ func NewImageService(imageCollection *mongo.Collection, ctx context.Context) Ima
 // UploadImage implements ImageService.
 func (i *ImageServiceImpl) UploadImage(img *models.UploadImageInput, file *multipart.FileHeader) (*models.ImageResponse, error) {
 	// check if the name contains an color
-	colors := []string{"black", "red", "blue"}
+	colors := []string{"black", "red", "blue", "yellow", "purple", "white", "brown", "grey", "orange", "cream", "violet", "sky blue", "gold", "teal", "peach", "pink", "silver"}
 	for _, color := range colors {
 		if strings.Contains(strings.ToLower(img.Name), color) {
 			// add the color to tags

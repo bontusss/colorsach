@@ -35,6 +35,5 @@ func (i *ImageController) UploadImage(c *gin.Context) {
 		c.JSON(500, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
-	// image.Image_url = url
 	c.JSON(200, gin.H{"status": "success", "data": imageData})
 }
