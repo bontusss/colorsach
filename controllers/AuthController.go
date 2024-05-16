@@ -93,10 +93,9 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "email already exist") {
-			ctx.JSON(http.StatusConflict, gin.H{"status": "error", "message": err.Error()})
-			// log.Fatal(err)
+			ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": err.Error()})
 		}
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
@@ -223,8 +222,6 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	// Set Tokens
 	utils.SetToken(user, ctx)
 }
-
-
 
 // @Summary RefreshAccessToken
 // @Description RefreshAccessToken
@@ -448,4 +445,36 @@ func (ac *AuthController) ResetPassword(ctx *gin.Context) {
 	ctx.SetCookie("logged_in", "", -1, "/", "localhost", false, true)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Password data updated successfully"})
+}
+
+// ResetPassword => Check Username
+// @Summary Check username
+// @Description Check if username exists or not
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Query username path string true "username"
+// @Param DBResponse body models.DBResponse true "DBResponse"
+// @Success 200
+// @Failure 400
+// @Failure 500
+// @Router /api/auth/check-username/ [get]
+func (ac *AuthController) CheckUserName(ctx *gin.Context) {
+	var user *models.DBResponse
+	username := ctx.Query("username")
+	if len(username) < 3 || username == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Username must be greater than 3 letters and must not be empty"})
+		return
+	}
+
+	err := ac.collection.FindOne(ac.ctx, bson.M{"username": username}).Decode(&user)
+	if err == mongo.ErrNoDocuments {
+		ctx.JSON(200, gin.H{"message": "username is available"})
+	} else if err != nil {
+		log.Println("error searching for username")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "error searching for username"})
+		return
+	} else {
+		ctx.JSON(200, gin.H{"message": "username already exists"})
+	}
 }

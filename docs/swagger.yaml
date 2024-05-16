@@ -115,11 +115,12 @@ definitions:
     properties:
       email:
         type: string
+      from_google:
+        type: boolean
       password:
         type: string
     required:
     - email
-    - password
     type: object
   models.SignUpInput:
     properties:
@@ -315,6 +316,30 @@ info:
   title: Colosach API
   version: "1.0"
 paths:
+  /api/auth/check-username/:
+    get:
+      consumes:
+      - application/json
+      description: Check if username exists or not
+      parameters:
+      - description: DBResponse
+        in: body
+        name: DBResponse
+        required: true
+        schema:
+          $ref: '#/definitions/models.DBResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Check username
+      tags:
+      - auth
   /api/auth/forgot-password:
     post:
       consumes:

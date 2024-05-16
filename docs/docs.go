@@ -23,6 +23,43 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/auth/check-username/": {
+            "get": {
+                "description": "Check if username exists or not",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Check username",
+                "parameters": [
+                    {
+                        "description": "DBResponse",
+                        "name": "DBResponse",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DBResponse"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/api/auth/forgot-password": {
             "post": {
                 "description": "ForgotPassword",
@@ -632,12 +669,14 @@ const docTemplate = `{
         "models.SignInInput": {
             "type": "object",
             "required": [
-                "email",
-                "password"
+                "email"
             ],
             "properties": {
                 "email": {
                     "type": "string"
+                },
+                "from_google": {
+                    "type": "boolean"
                 },
                 "password": {
                     "type": "string"
