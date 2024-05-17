@@ -71,7 +71,8 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	var user *models.SignUpInput
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		log.Println(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "An error occurred, try again!"})
 		return
 	}
 
@@ -80,20 +81,13 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		return
 	}
 
-	err := ac.collection.FindOne(ac.ctx, bson.M{"username": user.Username}).Decode(&user)
-	if err == nil {
-		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "username already exists"})
-		return
-	}
-
-	fmt.Println("signing up with: ", user.Email, user.Password, user.PasswordConfirm)
-
 	newUser, err := ac.authService.SignUpUser(user)
-	fmt.Println("User registered")
+	// fmt.Println("User registered")
 
 	if err != nil {
 		if strings.Contains(err.Error(), "email already exist") {
 			ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": err.Error()})
+			return
 		}
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
 		return
@@ -101,19 +95,17 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	if !user.Verified {
 		//generate verification code
-		// fmt.Println("Generating code")
 		verificationCode := randstr.String(20)
 		_, err = ac.collection.UpdateOne(ac.ctx, bson.M{"email": newUser.Email}, bson.M{"$set": bson.M{"verificationCode": verificationCode}})
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			// log.Fatal(err)
+			log.Println("error generating verification code: ", err)
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "An error occurred, try again!"})
 		}
 
 		randImage, err := services.GetRandomImage()
 		if err != nil {
-			// is it necessary to stop process because of this?
 			log.Println("error getting image for email template")
-			return
+			// return
 		}
 
 		//send  email verification mail
@@ -133,16 +125,13 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 			Arrow:            "/assets/ArrowRight.svg",
 			X:                "/assets/X.svg",
 		}
-		// fmt.Println("code generated")
 		err = utils.SendEmail(newUser, &emailData, "verificationCode.tmpl")
-		// fmt.Println("Starting to send mail")
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": "There was an error sending email"})
-			// log.Fatal(err)
+
 		}
-		// fmt.Println(verificationCode)
-		// fmt.Println(emailData)
+
 		message := "We sent an email with a verification code to " + user.Email
 		ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": message})
 
@@ -178,22 +167,24 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	var credentials *models.SignInInput
 
 	if err := ctx.ShouldBindJSON(&credentials); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-		log.Fatal(err)
+		log.Println("error: ", err)
+		// ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "An error occured, try again!"})
 	}
-	// fmt.Println("logging in with: ", credentials.Email, credentials.Password)
+	fmt.Println(credentials.Email, credentials.Password)
 
 	user, err := ac.userService.FindUserByEmail(credentials.Email)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+			// ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
 			log.Println("error logging in: ", err)
 			return
 		}
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+		// ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
 		log.Println("error logging in: ", err)
 		return
 	}
+
+	fmt.Println("3")
 
 	// check if user is signing in with "Signin with email" and set token
 	if credentials.FromGoogle {
@@ -202,25 +193,31 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		return
 	}
 
+	fmt.Println("4")
+
 	// check if user email is verified
 	if !user.Verified {
-		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User email is not verified."})
+		// ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User email is not verified."})
 		log.Println("user email is not verified")
 		return
 	}
 
+
 	if credentials.Password == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Password must be provided"})
+		// ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Password must be provided"})
 		return
 	}
 
+
 	if err := utils.VerifyPassword(user.Password, credentials.Password); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Passwordd"})
+		// ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
 		return
 	}
+
 
 	// Set Tokens
 	utils.SetToken(user, ctx)
+	fmt.Println("end")
 }
 
 // @Summary RefreshAccessToken

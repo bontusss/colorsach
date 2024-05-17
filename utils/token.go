@@ -85,6 +85,7 @@ func SetToken(user *models.DBResponse, ctx *gin.Context) {
 	}
 	accessToken, err := CreateToken(tokenDuration, user.ID, os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
 	if err != nil {
+		log.Println("error 1", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
@@ -95,18 +96,19 @@ func SetToken(user *models.DBResponse, ctx *gin.Context) {
 	}
 	refreshToken, err := CreateToken(refreshDuration, user.ID, os.Getenv("REFRESH_TOKEN_PRIVATE_KEY"))
 	if err != nil {
+		log.Println("error 2", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
 	atma, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_MAXAGE"))
 	if err != nil {
-		log.Fatal("Error: ", err)
+		log.Fatal("Error 3: ", err)
 	}
 
 	rtma, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
 	if err != nil {
-		log.Fatal("Error: ", err)
+		log.Fatal("Error 4: ", err)
 	}
 	ctx.SetCookie("access_token", accessToken, atma*60, "/", "localhost", false, true)
 	ctx.SetCookie("refresh_token", refreshToken, rtma*60, "/", "localhost", false, true)
