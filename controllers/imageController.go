@@ -20,21 +20,26 @@ func NewImageController(imageService services.ImageService) ImageController {
 
 func (i *ImageController) UploadImage(c *gin.Context) {
 	user := utils.GetCurrentUser(c)
-	// Parse from form data
 	imagee := &models.UploadImageInput{}
-	imagee.Title = c.PostForm("name")
+	imagee.Title = c.PostForm("title")
 	imagee.Tags = c.PostFormArray("tags")
 
-	// Parse image form, 10mb max memory
 	err := c.Request.ParseMultipartForm(10 << 20)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "File too large"})
 		return
 	}
-	file, _, err := c.Request.FormFile("image")
+	file, header, err := c.Request.FormFile("image")
 	if err != nil {
 		log.Println("An error occurred", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to retrieve file"})
+		return
+	}
+	defer file.Close()
+
+	if header.Size == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Empty file"})
+		return
 	}
 
 	imageData, err := i.imageService.UploadImage(imagee, file, user)

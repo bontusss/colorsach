@@ -52,28 +52,27 @@ func (i *ImageServiceImpl) UploadImage(img *models.UploadImageInput, file multip
 		log.Println("error converting thumbnail to a file")
 		return nil, err
 	}
-	// Save to cloudinary
-	cld, _ := cloudinary.NewFromParams(os.Getenv("CLOUDINARY_NAME"), os.Getenv("CLOUDINARY_KEY"), os.Getenv("CLOUDINARY_SECRET"))
-	result, err := cld.Upload.Upload(context.Background(), file, uploader.UploadParams{PublicID: "colosach"})
+
+	// Helper function to upload to Cloudinary
+	uploadToCloudinary := func(file multipart.File, publicID string) (string, error) {
+		cld, _ := cloudinary.NewFromParams(os.Getenv("CLOUDINARY_NAME"), os.Getenv("CLOUDINARY_KEY"), os.Getenv("CLOUDINARY_SECRET"))
+		result, err := cld.Upload.Upload(context.Background(), file, uploader.UploadParams{PublicID: publicID})
+		if err != nil {
+			log.Println("cloudinary error: ", err)
+			return "", err
+		}
+		return result.SecureURL, nil
+	}
+
+	// Use the helper function for both original and thumbnail
+	img.Src.Original, err = uploadToCloudinary(file, "colosach_original")
 	if err != nil {
-		log.Fatal("cloudinary error: ", err)
 		return nil, err
 	}
-	img.Src.Original = result.SecureURL
-
-	result2, err := cld.Upload.Upload(context.Background(), file2, uploader.UploadParams{PublicID: "colosach"})
+	img.Src.Thumbnail, err = uploadToCloudinary(file2, "colosach_thumbnail")
 	if err != nil {
-		log.Fatal("cloudinary error2: ", err)
 		return nil, err
 	}
-	img.Src.Thumbnail = result2.SecureURL
-
-	// Download image for further processing
-	// originalImage, err := utils.DownloadImage(img.Src.Original)
-	// if err != nil {
-	// 	log.Fatal("error downloading image", err)
-	// 	return nil, err
-	// }
 
 	// Generate color palette from the image
 	colorsFromImage, err := prominentcolor.Kmeans(uploadedImage)
@@ -97,9 +96,9 @@ func (i *ImageServiceImpl) UploadImage(img *models.UploadImageInput, file multip
 	opt := options.Index()
 	opt.SetUnique(true)
 
-	index := mongo.IndexModel{Keys: bson.M{"name": 1}, Options: opt}
+	index := mongo.IndexModel{Keys: bson.D{{Key: "title", Value: 1}, {Key: "owner_id", Value: 1}}, Options: opt}
 	if _, err := i.ImageCollection.Indexes().CreateOne(i.ctx, index); err != nil {
-		return nil, errors.New("could not create index for name")
+		return nil, fmt.Errorf("could not create index for title: %v", err)
 	}
 
 	//todo: create index for tags too if we will query images by tags

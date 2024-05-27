@@ -54,6 +54,12 @@ type SearchPhotoResponse struct {
 	PrevPage     string   `json:"prev_page"`
 }
 
+func getRandomAfroSymns() string {
+	symns := []string{"africa", "black", "afro"}
+	randomSymn := randomize(symns)
+	return randomSymn
+}
+
 // @Summary Search Pexel photos
 // @Description Requires a color and query and returns a list of photos
 // @Tags search
@@ -72,10 +78,13 @@ func SearchPexel(c *gin.Context) {
 
 	}
 
+	
+
 	px := pexels.NewClient(os.Getenv("PEXELS_API_KEY"))
 	ctx := context.Background()
+	queryPrefix := getRandomAfroSymns()
 	res, err := px.PhotoService.Search(ctx, &pexels.PhotoParams{
-		Query:       req.Query,
+		Query:       queryPrefix + req.Query,
 		Color:       req.Color,
 		Page:        req.Page,
 		Orientation: req.Orientation,

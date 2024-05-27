@@ -43,7 +43,7 @@ func DownloadImage(url string) (image.Image, error) {
 
 func ExtractColorFromStrings(title string) []string {
 	colors := []string{}
-	colorList := []string{"black", "red", "blue", "yellow", "purple", "white", "brown", "grey", "orange", "cream", "violet", "sky blue", "gold", "teal", "peach", "pink", "silver"}
+	colorList := []string{"black", "red", "blue", "yellow", "purple", "white", "brown", "grey", "orange", "cream", "violet", "sky blue", "gold", "teal", "peach", "pink", "silver", "green"}
 	for _, color := range colorList {
 		if strings.Contains(strings.ToLower(title), color) {
 			colors = append(colors, color)
