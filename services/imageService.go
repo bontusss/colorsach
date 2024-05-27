@@ -7,5 +7,5 @@ import (
 )
 
 type ImageService interface {
-	UploadImage(*models.UploadImageInput, *multipart.FileHeader) (*models.ImageResponse, error)
+	UploadImage(*models.UploadImageInput, multipart.File, *models.DBResponse) (*models.ImageResponse, error)
 }

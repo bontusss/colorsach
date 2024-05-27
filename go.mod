@@ -18,8 +18,11 @@ require (
 	github.com/wneessen/go-mail v0.4.1
 	go.mongodb.org/mongo-driver v1.13.1
 	golang.org/x/crypto v0.22.0
+	golang.org/x/image v0.16.0
 	golang.org/x/text v0.15.0
 )
+
+require github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
@@ -28,6 +31,7 @@ require (
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/creasty/defaults v1.5.1 // indirect
+	github.com/fogleman/gg v1.3.0
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -56,7 +60,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/oliamb/cutter v0.2.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect

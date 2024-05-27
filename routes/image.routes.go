@@ -16,7 +16,7 @@ func NewImageRouteController(imageController controllers.ImageController) ImageR
 }
 
 func (i *ImageRouteController) ImageRoute(rg *gin.RouterGroup, userService services.UserService) {
-	router := rg.Group("images")
+	router := rg.Group("image")
 	router.Use(middleware.DeserializeUser(userService))
 	router.POST("/upload", i.imageController.UploadImage)
 }
