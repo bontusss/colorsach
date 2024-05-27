@@ -50,13 +50,15 @@ func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (str
 func ValidateToken(token string, publicKey string) (interface{}, error) {
 	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
 	if err != nil {
+		log.Println("error validate token 1: ", err)
 		return nil, fmt.Errorf("could not decode: %w", err)
 	}
 
 	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
 
 	if err != nil {
-		return "", fmt.Errorf("validate: parse key: %w", err)
+		log.Println("eror validate token 2: ", err)
+		return "", fmt.Errorf("validate1: parse key: %w", err)
 	}
 
 	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
@@ -67,12 +69,13 @@ func ValidateToken(token string, publicKey string) (interface{}, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("validate: %w", err)
+		log.Println("error validate token 3: ", err)
+		return nil, fmt.Errorf("validate2: %w", err)
 	}
 
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok || !parsedToken.Valid {
-		return nil, fmt.Errorf("validate: invalid token")
+		return nil, fmt.Errorf("validate3: invalid token")
 	}
 
 	return claims["sub"], nil
@@ -85,7 +88,7 @@ func SetToken(user *models.DBResponse, ctx *gin.Context) {
 	}
 	accessToken, err := CreateToken(tokenDuration, user.ID, os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
 	if err != nil {
-		log.Println("error 1", err)
+		log.Println("error settoken 1: ", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
@@ -96,19 +99,19 @@ func SetToken(user *models.DBResponse, ctx *gin.Context) {
 	}
 	refreshToken, err := CreateToken(refreshDuration, user.ID, os.Getenv("REFRESH_TOKEN_PRIVATE_KEY"))
 	if err != nil {
-		log.Println("error 2", err)
+		log.Println("error settoken 2: ", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
 	atma, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_MAXAGE"))
 	if err != nil {
-		log.Fatal("Error 3: ", err)
+		log.Fatal("Error settoken 3: ", err)
 	}
 
 	rtma, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
 	if err != nil {
-		log.Fatal("Error 4: ", err)
+		log.Fatal("Error settoken 4: ", err)
 	}
 	ctx.SetCookie("access_token", accessToken, atma*60, "/", "localhost", false, true)
 	ctx.SetCookie("refresh_token", refreshToken, rtma*60, "/", "localhost", false, true)
