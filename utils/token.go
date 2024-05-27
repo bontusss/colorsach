@@ -50,26 +50,27 @@ func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (str
 func ValidateToken(token string, publicKey string) (interface{}, error) {
 	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
 	if err != nil {
-		log.Println("error validate token 1: ", err)
+		log.Println("error validate token 1: could not decode public key", err)
 		return nil, fmt.Errorf("could not decode: %w", err)
 	}
 
-	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
+	log.Printf("Decoded Public Key: %s\n", string(decodedPublicKey))
 
+	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
 	if err != nil {
-		log.Println("eror validate token 2: ", err)
-		return "", fmt.Errorf("validate1: parse key: %w", err)
+		log.Println("error validate token 2: failed to parse public key", err)
+		return nil, fmt.Errorf("validate1: parse key: %w", err)
 	}
 
 	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %s", t.Header["alg"])
 		}
 		return key, nil
 	})
 
 	if err != nil {
-		log.Println("error validate token 3: ", err)
+		log.Println("error validate token 3: token parsing or signature verification failed", err)
 		return nil, fmt.Errorf("validate2: %w", err)
 	}
 
