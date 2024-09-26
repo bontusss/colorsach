@@ -15,18 +15,18 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/bontusss/colosach/docs"
 	"github.com/bontusss/colosach/controllers"
+	_ "github.com/bontusss/colosach/docs"
 	"github.com/bontusss/colosach/routes"
 	"github.com/bontusss/colosach/services"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var (
@@ -164,7 +164,7 @@ func main() {
 
 	router := server.Group("/api")
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	
+
 	router.GET("/health-checker", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "alive"})
 	})

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -202,18 +203,15 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		return
 	}
 
-
 	if credentials.Password == "" {
 		// ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Password must be provided"})
 		return
 	}
 
-
 	if err := utils.VerifyPassword(user.Password, credentials.Password); err != nil {
 		// ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
 		return
 	}
-
 
 	// Set Tokens
 	utils.SetToken(user, ctx)
@@ -444,7 +442,7 @@ func (ac *AuthController) ResetPassword(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Password data updated successfully"})
 }
 
-// ResetPassword => Check Username
+// CheckUserName => Check Username
 // @Summary Check username
 // @Description Check if username exists or not
 // @Tags auth
@@ -465,7 +463,7 @@ func (ac *AuthController) CheckUserName(ctx *gin.Context) {
 	}
 
 	err := ac.collection.FindOne(ac.ctx, bson.M{"username": username}).Decode(&user)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		ctx.JSON(200, gin.H{"message": "username is available"})
 	} else if err != nil {
 		log.Println("error searching for username")
